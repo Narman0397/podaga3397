@@ -14,7 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cluster_worker: {
+        Row: {
+          id: string
+          last_result: Json
+          ran_at: string
+          traced: Json
+        }
+        Insert: {
+          id: string
+          last_result?: Json
+          ran_at?: string
+          traced?: Json
+        }
+        Update: {
+          id?: string
+          last_result?: Json
+          ran_at?: string
+          traced?: Json
+        }
+        Relationships: []
+      }
+      scan_history: {
+        Row: {
+          address: string
+          id: string
+          kind: string
+          scanned_at: string
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          id?: string
+          kind: string
+          scanned_at?: string
+          summary?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          id?: string
+          kind?: string
+          scanned_at?: string
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_state: {
+        Row: {
+          data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_tags: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          note: string
+          perf: Json | null
+          seen: number
+          tag: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          note?: string
+          perf?: Json | null
+          seen?: number
+          tag: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          note?: string
+          perf?: Json | null
+          seen?: number
+          tag?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
