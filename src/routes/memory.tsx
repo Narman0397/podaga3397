@@ -6,6 +6,7 @@ import { WalletTag, WALLET_TAG_LABELS } from "@/components/WalletTag";
 import { trackRecord, hasKeys } from "@/lib/real";
 import { walletScore } from "@/lib/edge";
 import { classifyWallet, inspectWallet } from "@/lib/wallet-inspect";
+import { WieStatus } from "@/components/WieStatus";
 
 export const Route = createFileRoute("/memory")({
   head: () => ({ meta: [
@@ -135,6 +136,7 @@ function Memory() {
           <input ref={fileRef} type="file" accept=".json,.csv,.txt" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void importFile(f); e.target.value = ""; }} />
         </div>} />
       {msg && <div className="card mb-4 font-mono text-sm">{msg}</div>}
+      <WieStatus />
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
         <Stat label="Total wallet" value={memory.length} />
         <Stat label={WALLET_TAG_LABELS.cabal} value={stats.cabal} tone="signal" />
