@@ -41,7 +41,7 @@ export interface WalletEvent {
   source: string;
   parse_status: ParseStatus;
   completeness: Completeness;
-  raw_ref: { type: string | null; dex: string | null };
+  raw_ref: { type: string | null; dex: string | null; counterparty?: string | null };
   normalizer_version: string;
 }
 
