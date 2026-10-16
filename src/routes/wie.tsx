@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/ui-bits";
@@ -64,7 +64,7 @@ function WiePage() {
         {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={tab === t ? "btn !py-1" : "btn-ghost !py-1"}>{t}</button>)}
       </div>
       {tab === "Job Monitor" ? <WieStatus /> : st === "loading" ? <div className="card text-sm text-muted-foreground">Memuat…</div>
-        : st === "guest" ? <div className="card text-sm text-muted-foreground">Masuk untuk melihat Wallet Intelligence.</div>
+        : st === "guest" ? <div className="card flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground"><span>Masuk untuk melihat Wallet Intelligence.</span><Link to="/auth" className="btn !py-1">Masuk</Link></div>
         : st === "error" ? <div className="card text-sm text-destructive">Data tidak dapat dimuat.</div>
         : tab === "Ringkasan" ? <Overview sigs={sigs} wallets={wallets} rels={rels} />
         : tab === "Backtest" ? <Backtests bts={bts} />
@@ -90,7 +90,7 @@ function Overview({ sigs, wallets, rels }: { sigs: Sig[]; wallets: { total: numb
       </div>
       <section className="card overflow-x-auto">
         <h2 className="mb-2 font-semibold">Sinyal terbaru</h2>
-        {!sigs.length ? <p className="text-sm text-muted-foreground">Belum ada sinyal. Sinyal muncul setelah collector mengumpulkan pembelian wallet (butuh key Helius aktif).</p> : (
+        {!sigs.length ? <p className="text-sm text-muted-foreground">Belum ada sinyal. Sinyal muncul setelah collector mengumpulkan pembelian wallet (butuh key Helius aktif). <Link to="/keys" className="underline">Tambah key Helius</Link></p> : (
           <table className="w-full text-xs">
             <thead className="text-left text-muted-foreground"><tr><th className="pr-3">Waktu</th><th className="pr-3">Wallet</th><th className="pr-3">Token</th><th className="pr-3">Delay</th><th className="pr-3">Likuiditas</th><th className="pr-3">Entry</th><th className="pr-3">Risiko</th><th className="pr-3">Gate</th><th>Alasan</th></tr></thead>
             <tbody>{sigs.slice(0, 50).map((s) => (
@@ -130,8 +130,15 @@ function Backtests({ bts }: { bts: Bt[] }) {
 function WalletDetail() {
   const [addr, setAddr] = useState("");
   const [d, setD] = useState<null | "loading" | { scores: { scored_at: string; score: number; confidence: number; win_rate: number; tokens_closed: number; cls: string; score_version: string }[]; outcomes: { mint: string; roi: number | null; hold_sec: number | null; is_closed: boolean }[]; rels: Rel[]; events: number | null }>(null);
-  const load = async () => {
-    const a = addr.trim(); if (!a) return;
+  const [err, setErr] = useState<string | null>(null);
+  const [known, setKnown] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.from("wallet_collect_state").select("wallet").limit(50).then(({ data }) => setKnown((data ?? []).map((x) => x.wallet)));
+  }, []);
+  const load = async (raw = addr) => {
+    const a = raw.trim();
+    if (!isSolAddress(a)) { setErr("Alamat Solana tidak valid (32–44 karakter base58)."); return; }
+    setErr(null);
     setD("loading");
     const [s, o, ra, rb, e] = await Promise.all([
       supabase.from("wallet_score_history").select("scored_at, score, confidence, win_rate, tokens_closed, cls, score_version").eq("wallet", a).order("scored_at", { ascending: false }).limit(20),
@@ -145,10 +152,13 @@ function WalletDetail() {
   const a = addr.trim();
   return (
     <div className="space-y-4">
-      <form className="card flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); load(); }}>
+      <form className="card flex flex-wrap gap-2" noValidate onSubmit={(e) => { e.preventDefault(); load(); }}>
         <label htmlFor="wie-addr" className="sr-only">Alamat wallet</label>
         <input id="wie-addr" className="min-w-0 flex-1 rounded-lg border bg-surface px-3 py-2 font-mono text-sm" placeholder="Alamat wallet" value={addr} onChange={(e) => setAddr(e.target.value)} />
         <button className="btn">Lihat</button>
+        {err && <p role="alert" className="w-full text-xs text-destructive">{err}</p>}
+        {known.length > 0 && <div className="flex w-full flex-wrap gap-1"><span className="text-xs text-muted-foreground">Wallet dipantau:</span>
+          {known.map((w) => <button key={w} type="button" className="chip font-mono" onClick={() => { setAddr(w); load(w); }}>{short(w)}</button>)}</div>}
       </form>
       {d === "loading" && <div className="card text-sm text-muted-foreground">Memuat…</div>}
       {d && d !== "loading" && (<>
@@ -174,6 +184,8 @@ function WalletDetail() {
     </div>
   );
 }
+
+export const isSolAddress = (s: string) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 
 function RelGraph({ center, rels }: { center: string; rels: Rel[] }) {
   const { nodes, edges } = neighbourhood(center, rels);

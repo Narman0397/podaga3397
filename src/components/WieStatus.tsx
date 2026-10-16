@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { isStale } from "@/lib/wallet-intelligence/jobs";
 import { attribute, type AttribSignal } from "@/lib/wallet-intelligence/signals";
@@ -22,13 +23,14 @@ const fmt = (s: string | null) => (s ? new Date(s).toLocaleString("id-ID", { dat
 /** WIE V2.1 Job Monitor + collector status. Real data only; empty and stale states shown explicitly. */
 export function WieStatus() {
   const [v, setV] = useState<View>({ state: "loading" });
+  const [filter, setFilter] = useState<"all" | "success" | "failed" | "running">("all");
   useEffect(() => {
     let alive = true;
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) { if (alive) setV({ state: "guest" }); return; }
       const [runs, ev, st, gap, out, sh, sg] = await Promise.all([
-        supabase.from("wie_job_runs").select("id, job_name, status, started_at, finished_at, duration_ms, records_seen, records_inserted, records_skipped, error_count, error_summary").order("started_at", { ascending: false }).limit(20),
+        supabase.from("wie_job_runs").select("id, job_name, status, started_at, finished_at, duration_ms, records_seen, records_inserted, records_skipped, error_count, error_summary").neq("status", "skipped").order("started_at", { ascending: false }).limit(50),
         supabase.from("wallet_events").select("id", { count: "exact", head: true }),
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }),
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }).eq("possible_gap", true),
@@ -44,7 +46,7 @@ export function WieStatus() {
   }, []);
 
   if (v.state === "loading") return <div className="card mb-6 text-sm text-muted-foreground">Memuat status WIE…</div>;
-  if (v.state === "guest") return <div className="card mb-6 text-sm text-muted-foreground">Masuk untuk melihat status Wallet Intelligence Engine.</div>;
+  if (v.state === "guest") return <div className="card mb-6 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground"><span>Masuk untuk melihat status Wallet Intelligence Engine.</span><Link to="/auth" className="btn !py-1">Masuk</Link></div>;
   if (v.state === "error") return <div className="card mb-6 text-sm text-destructive">{v.msg}</div>;
 
   const lastCollect = v.runs.find((r) => r.job_name === "wie-collect" && r.status !== "skipped");
@@ -55,6 +57,7 @@ export function WieStatus() {
         <h2 className="text-lg font-semibold">WIE V2.1 · Job Monitor</h2>
         <span className={stale ? "text-xs text-warn" : "text-xs text-signal"}>
           {lastCollect ? (stale ? `Data collector usang · terakhir ${fmt(lastCollect.finished_at)}` : `Collector aktif · ${fmt(lastCollect.finished_at)}`) : "Collector belum pernah berjalan (butuh key Helius aktif)"}
+          {!lastCollect && <Link to="/keys" className="ml-2 underline">Tambah key</Link>}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -69,6 +72,12 @@ export function WieStatus() {
         <Mini label="Wallet prediktif (1j)" value={v.sig.attrib.filter((a) => a.verdict === "PREDICTIVE").length} />
         <Mini label="Job gagal" value={v.runs.filter((r) => r.status === "failed").length} />
       </div>
+      <div className="flex flex-wrap gap-1" role="group" aria-label="Filter status job">
+        {(["all", "success", "failed", "running"] as const).map((f) => (
+          <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={filter === f ? "btn !py-0.5 text-xs" : "btn-ghost !py-0.5 text-xs"}>
+            {{ all: "Semua", success: "Sukses", failed: "Gagal", running: "Berjalan" }[f]} ({f === "all" ? v.runs.length : v.runs.filter((r) => r.status === f).length})
+          </button>))}
+      </div>
       {v.runs.length === 0 ? (
         <p className="text-sm text-muted-foreground">Belum ada riwayat job. Riwayat muncul setelah worker latar belakang berjalan.</p>
       ) : (
@@ -76,7 +85,7 @@ export function WieStatus() {
           <table className="w-full text-left text-xs">
             <thead className="text-muted-foreground"><tr><th className="py-1 pr-3">Job</th><th className="pr-3">Status</th><th className="pr-3">Mulai</th><th className="pr-3">Durasi</th><th className="pr-3">Dilihat/Baru/Lewat</th><th>Error</th></tr></thead>
             <tbody>
-              {v.runs.map((r) => (
+              {v.runs.filter((r) => filter === "all" || r.status === filter).map((r) => (
                 <tr key={r.id} className="border-t border-border">
                   <td className="py-1 pr-3">{JOB_LABEL[r.job_name] ?? r.job_name}</td>
                   <td className={r.status === "failed" ? "pr-3 text-destructive" : r.status === "success" ? "pr-3 text-signal" : "pr-3 text-muted-foreground"}>{r.status}</td>
