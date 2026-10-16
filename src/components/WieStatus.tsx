@@ -3,9 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStale } from "@/lib/wallet-intelligence/jobs";
 
 type Run = { id: string; job_name: string; status: string; started_at: string; finished_at: string | null; duration_ms: number | null; records_seen: number; records_inserted: number; records_skipped: number; error_count: number; error_summary: string | null };
-type View = { state: "loading" } | { state: "guest" } | { state: "error"; msg: string } | { state: "ok"; runs: Run[]; events: number | null; wallets: number | null; gaps: number | null };
+type View = { state: "loading" } | { state: "guest" } | { state: "error"; msg: string } | { state: "ok"; runs: Run[]; events: number | null; wallets: number | null; gaps: number | null; outcomes: number | null; scoreHistory: number | null };
 
-const JOB_LABEL: Record<string, string> = { "wie-collect": "Collector wallet", topvol: "Top volume harian", alpha: "Alpha Hunter" };
+const JOB_LABEL: Record<string, string> = {
+  "wie-collect": "Collector wallet",
+  "wie-outcomes": "Outcome Engine (F2)",
+  "wie-score": "Alpha Scoring v2 (F3)",
+  topvol: "Top volume harian",
+  alpha: "Alpha Hunter",
+};
 const fmt = (s: string | null) => (s ? new Date(s).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" }) : "—");
 
 /** WIE V2.1 Job Monitor + collector status. Real data only; empty and stale states shown explicitly. */
