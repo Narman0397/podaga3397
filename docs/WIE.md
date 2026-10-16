@@ -31,10 +31,15 @@
 - Recent trades (most recent half) are weighted 2× in avg_roi calculation.
 - Replaces classifyPerf (last 10 tokens, in-memory) with persistent, versioned, history-tracked scoring.
 
+## Phase 4–5 (done) — Early entry, attribution, token risk, execution
+- Table: `wallet_signals` (one row per tracked-wallet buy, unique signature+wallet+mint; source/detect/signal times, source vs signal price, delay, entry_status EARLY/LATE/INSUFFICIENT_DATA, risk + confidence + reasons, simulated execution, horizons 5m/15m/1h/24h, MFE/MAE, risk re-check).
+- Code: `signals.ts` (pure) + `signal-jobs.server.ts`; job `wie-signals` every 5 min, DexScreener prices only; horizons past 30 min tolerance are marked missed, never backfilled.
+- Attribution is correlational, needs >=5 evaluated signals, compares net (after cost) return to the all-signal baseline. Simulation only, no live execution.
+
 ## Running
 - Scheduler: managed cron `cluster-worker` (every minute) POSTs to `/api/public/hooks/cluster-worker`; sub-jobs gate themselves (main 50s, collector 30m, outcomes 1h, score 6h, top-volume 24h, alpha 6h).
 - Env (server only): `LOVABLE_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, optional `HELIUS_WEBHOOK_SECRET`. Helius keys come from each user's saved settings.
 - Tests: `bunx vitest run`.
 
 ## Backlog
-4 early entry + attribution · 5 token risk + execution · 6 evidence-based wallet graph · 7 gate + temporal backtest · 8 full dashboard pages.
+6 evidence-based wallet graph · 7 gate + temporal backtest · 8 full dashboard pages.

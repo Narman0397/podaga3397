@@ -28,7 +28,7 @@ describe("Phase 4 early entry", () => {
   });
   it("attribution needs at least 5 evaluated signals", () => {
     const s = Array.from({ length: 4 }, () => ({ wallet: "A", status: "EARLY" as const, horizons: { "1h": { price: 1, ret_pct: 30, at: "" } }, costPct: 2 }));
-    expect(attribute(s)[0].verdict).toBe("INSUFFICIENT_DATA");
+    expect(attribute(s)[0]?.verdict).toBe("INSUFFICIENT_DATA");
   });
 });
 
