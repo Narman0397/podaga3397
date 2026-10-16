@@ -36,10 +36,22 @@
 - Code: `signals.ts` (pure) + `signal-jobs.server.ts`; job `wie-signals` every 5 min, DexScreener prices only; horizons past 30 min tolerance are marked missed, never backfilled.
 - Attribution is correlational, needs >=5 evaluated signals, compares net (after cost) return to the all-signal baseline. Simulation only, no live execution.
 
+## Phase 6 (done) — Wallet Graph
+- Table `wallet_relations` (unique wallet_a+wallet_b+relation; evidence ≤20 signatures, first/last seen, frequency, confidence, status observed/suspected/strong_evidence/rejected, reasons, rule_version).
+- Code `graph.ts` (pure): funding = direct SOL transfers (counterparty now kept in raw_ref, normalizer wie-norm-1.1.0); co_entry = tracked wallets buying the same token within 60s (never above "suspected"); exchange counterparties → rejected; duplicate evidence not double counted; one-hop bounded neighbourhood (60 nodes/120 edges).
+- Job `wie-graph` every 6h over the last 30 days of events.
+
+## Phase 7 (done) — Gate + temporal backtest
+- `gate.ts`: ACCEPT/WATCH/REJECT/INSUFFICIENT_DATA with separate alpha/early/relationship/risk/execution/confidence/data-quality scores, reasons, version. Baseline weights 40/35/25 are experimental. ACCEPT only opens paper/simulation. Uses only score history known at signal time. Stored on `wallet_signals.gate*`; job `wie-gate` every 5 min.
+- `backtest.ts`: chronological 60/40 split, net of estimated cost, missing follow-up price counted −100%, unfinished horizons excluded and reported, ungated baseline. Stored in `wie_backtests` per horizon (15m/1h/24h); job `wie-backtest` every 24h.
+
+## Phase 8 (done) — Dashboard
+- Route `/wie` (menu "Wallet Intelligence"): Overview (wallets, sample sufficiency, relations, gate counts, latest signals with reasons), Wallet detail (score history, per-token outcome chart, bounded relation graph with evidence), Backtest, Job Monitor. Empty/guest/error states shown; no demo numbers.
+
 ## Running
-- Scheduler: managed cron `cluster-worker` (every minute) POSTs to `/api/public/hooks/cluster-worker`; sub-jobs gate themselves (main 50s, collector 30m, outcomes 1h, score 6h, top-volume 24h, alpha 6h).
+- Scheduler: managed cron `cluster-worker` (every minute) POSTs to `/api/public/hooks/cluster-worker`; sub-jobs gate themselves (main 50s, collector 30m, signals 5m, gate 5m, outcomes 1h, score 6h, graph 6h, backtest 24h, top-volume 24h, alpha 6h).
 - Env (server only): `LOVABLE_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, optional `HELIUS_WEBHOOK_SECRET`. Helius keys come from each user's saved settings.
 - Tests: `bunx vitest run`.
 
 ## Backlog
-6 evidence-based wallet graph · 7 gate + temporal backtest · 8 full dashboard pages.
+- Wallet role classification beyond alpha/churner/neutral; per-category/market-condition backtest breakdown.

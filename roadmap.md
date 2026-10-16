@@ -16,6 +16,6 @@
 - [x] WIE Fase 3 — Alpha Scoring v2 (wallet_score_history, scoreWalletV2, confidence, versi, histori; wie-score setiap 6h).
 - [x] WIE Fase 4 — early entry + attribution (wallet_signals, wie-signals tiap 5m).
 - [x] WIE Fase 5 — token risk + execution.
-- [ ] WIE Fase 6 — evidence-based wallet graph.
-- [ ] WIE Fase 7 — gate + temporal backtest.
-- [ ] WIE Fase 8 — full dashboard pages.
+- [x] WIE Fase 6 — evidence-based wallet graph.
+- [x] WIE Fase 7 — gate + temporal backtest.
+- [x] WIE Fase 8 — full dashboard pages.
