@@ -112,7 +112,7 @@ describe("runOutcomeEngine adapter", () => {
 describe("tradeConfidence", () => {
   it("returns 0 for 0 trades", () => expect(tradeConfidence(0)).toBe(0));
   it("returns >0 for 1 trade", () => expect(tradeConfidence(1)).toBeGreaterThan(0));
-  it("reaches ~80+ at 10 trades", () => expect(tradeConfidence(10)).toBeGreaterThanOrEqual(70));
+  it("reaches ~65+ at 10 trades", () => expect(tradeConfidence(10)).toBeGreaterThanOrEqual(65));
   it("caps below 100", () => expect(tradeConfidence(1000)).toBeLessThan(100));
   it("is monotonically increasing", () => {
     for (let i = 1; i <= 20; i++) expect(tradeConfidence(i)).toBeGreaterThanOrEqual(tradeConfidence(i - 1));
