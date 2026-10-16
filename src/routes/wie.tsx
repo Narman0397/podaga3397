@@ -147,7 +147,7 @@ function WalletDetail() {
     <div className="space-y-4">
       <form className="card flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); load(); }}>
         <label htmlFor="wie-addr" className="sr-only">Alamat wallet</label>
-        <input id="wie-addr" className="input min-w-0 flex-1 font-mono" placeholder="Alamat wallet" value={addr} onChange={(e) => setAddr(e.target.value)} />
+        <input id="wie-addr" className="min-w-0 flex-1 rounded-lg border bg-surface px-3 py-2 font-mono text-sm" placeholder="Alamat wallet" value={addr} onChange={(e) => setAddr(e.target.value)} />
         <button className="btn">Lihat</button>
       </form>
       {d === "loading" && <div className="card text-sm text-muted-foreground">Memuat…</div>}
