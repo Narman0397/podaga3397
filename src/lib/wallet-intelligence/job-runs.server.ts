@@ -44,8 +44,10 @@ export async function withJobRun<T>(
     fatal = (result as unknown as { error: string }).error;
   const c = { ...emptyCounters(), ...pick(result) };
   const skipped = !fatal && result == null;
-  if (row?.id) {
-    await supabaseAdmin
+  // Interval-gated no-ops are not history: drop the placeholder row so real runs stay visible.
+  if (row?.id && skipped) {
+    await supabaseAdmin.from("wie_job_runs").delete().eq("id", row.id);
+  } else if (row?.id) {
       .from("wie_job_runs")
       .update({
         ...c,
