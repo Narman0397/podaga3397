@@ -41,8 +41,6 @@ export async function runGateJob() {
     supabaseAdmin.from("wallet_relations").select("wallet_a, wallet_b, status, confidence").in("wallet_a", wallets),
     supabaseAdmin.from("wallet_relations").select("wallet_a, wallet_b, status, confidence").in("wallet_b", wallets),
   ]);
-  const latest = new Map<string, { score: number; confidence: number; tokens_closed: number; scored_at: string }>();
-  for (const s of scores ?? []) if (!latest.has(s.wallet)) latest.set(s.wallet, s);
   const rels = [...(relsA ?? []), ...(relsB ?? [])];
   const now = new Date().toISOString();
   let records_updated = 0, error_count = 0;
@@ -60,7 +58,6 @@ export async function runGateJob() {
     const { error } = await supabaseAdmin.from("wallet_signals").update({ gate_decision: g.decision, gate: g, gate_at: now }).eq("id", s.id).is("gate_decision", null);
     if (error) error_count++; else records_updated++;
   }
-  void latest;
   return { records_seen: sigs.length, records_updated, error_count };
 }
 
