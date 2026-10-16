@@ -48,10 +48,11 @@ export async function withJobRun<T>(
   if (row?.id && skipped) {
     await supabaseAdmin.from("wie_job_runs").delete().eq("id", row.id);
   } else if (row?.id) {
+    await supabaseAdmin
       .from("wie_job_runs")
       .update({
         ...c,
-        status: skipped ? "skipped" : finalStatus(c, fatal),
+        status: finalStatus(c, fatal),
         finished_at: new Date().toISOString(),
         duration_ms: Date.now() - started,
         error_summary: fatal ? sanitizeError(fatal) : null,
