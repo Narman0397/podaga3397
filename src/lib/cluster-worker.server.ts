@@ -2,6 +2,10 @@ import { CEX_HOT_WALLETS, classifyPerf, isAlphaWhale, pickTopVolume, goldenSetup
 import { exitDecision, dumpSignal, mirrorSignal, guessDeployer, pairRank, suspiciousDrop, type ExitGuard } from "./exit-rules";
 // Server-side 24/7 cluster worker: dual-track deep trace (DEX/Raydium + Pre-Raydium Pump.fun) and auto-saves clusters per user.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { tryLock, withJobRun } from "./wallet-intelligence/job-runs.server";
+import { collectWallets } from "./wallet-intelligence/collector";
+import { emptyCounters } from "./wallet-intelligence/jobs";
+import type { RawEnhancedTx } from "./wallet-intelligence/types";
 
 type Key = { key: string; status?: string };
 type Tx = { feePayer: string; timestamp: number; nativeTransfers?: { fromUserAccount: string; toUserAccount: string; amount: number }[] };
@@ -122,8 +126,10 @@ export async function runClusterWorker() {
     return { id: u.user_id, keys: (d.keys ?? []).map((k) => k.key).filter(Boolean), on: due && d.autoSaveCluster !== false && d.helius?.master !== false && d.helius?.worker !== false, minLp: d.guard?.minLp ?? 15_000, sg: d.helius?.radarAutoTrace === false ? 0 : slots(d.helius?.traceSlotsGeneral, 2), sp: d.helius?.radarAutoTrace === false ? 0 : slots(d.helius?.traceSlotsPumpFun, 1) };
   }).filter((u) => u.on && u.keys.length && u.sg + u.sp > 0);
   const note = (id: string) => async (e: unknown) => { await db.from("cluster_worker").update({ last_result: { error: String((e as Error)?.stack ?? e).slice(0, 800), at: new Date().toISOString() } }).eq("id", id); return { error: String(e) }; };
-  const daily = await runDailyTopVolume(users ?? []).catch(note("topvol"));
-  const alpha = await runAlphaHunter(users ?? []).catch(note("alpha"));
+  const daily = await withJobRun("topvol", "cron", () => runDailyTopVolume(users ?? []).catch(note("topvol")));
+  const alpha = await withJobRun("alpha", "cron", () => runAlphaHunter(users ?? []).catch(note("alpha")));
+  const collect = await withJobRun("wie-collect", "cron", () => runWieCollector(users ?? []));
+  if (collect) console.log("wie-collect", JSON.stringify(collect).slice(0, 300));
   if (daily || alpha) console.log("daily/alpha", JSON.stringify({ daily, alpha }).slice(0, 500));
   const autoBuy = await runServerAutoBuy(users ?? [], lastRun).catch((e) => ({ error: String(e) }));
   const exits = await runServerExitTracker().catch((e) => ({ error: String(e) }));
@@ -437,11 +443,32 @@ const cfgUsers = (users: UserRow[], flag: "dailyTopVolume" | "alphaHunter") => u
   .filter((u) => u.d.helius?.master !== false && u.d.helius?.worker !== false && u.d.helius?.[flag] !== false)
   .map((u) => ({ id: u.id, keys: (u.d.keys ?? []).map((k) => k.key).filter(Boolean), minLp: u.d.guard?.minLp ?? 15_000 }))
   .filter((u) => u.keys.length);
+/** Atomic interval gate (WIE V2.1): exactly one concurrent caller wins per interval. */
 async function gate(id: string, every: number) {
-  const { data } = await supabaseAdmin.from("cluster_worker").select("ran_at, last_result").eq("id", id).maybeSingle();
-  if (data && Date.now() - Date.parse(data.ran_at) < every) return null;
-  await supabaseAdmin.from("cluster_worker").upsert({ id, ran_at: new Date().toISOString() });
-  return true;
+  return (await tryLock(id, every)) ? true : null;
+}
+
+/** WIE V2.1 Phase 1: incremental, idempotent wallet event collector over tagged wallets (batch-limited, every 30 min). */
+export async function runWieCollector(users: UserRow[]) {
+  const who = cfgUsers(users, "dailyTopVolume");
+  if (!who.length || !(await gate("wie-collect", 30 * 60_000))) return null;
+  const h = helius(who.flatMap((u) => u.keys));
+  const { data: tagged } = await supabaseAdmin.from("wallet_tags").select("address").in("tag", ["cabal", "watch"]).limit(2000);
+  const addrs = [...new Set((tagged ?? []).map((t) => t.address))];
+  if (!addrs.length) return { ...emptyCounters(), wallets: 0 };
+  const { data: st } = await supabaseAdmin.from("wallet_collect_state").select("wallet, newest_signature, newest_block_time, events_count, last_run_at").in("wallet", addrs);
+  const byW = new Map((st ?? []).map((r) => [r.wallet, r]));
+  const queue = addrs.map((w) => byW.get(w) ?? { wallet: w, newest_signature: null, newest_block_time: null, events_count: 0, last_run_at: null })
+    .sort((a, b) => (a.last_run_at ? Date.parse(a.last_run_at) : 0) - (b.last_run_at ? Date.parse(b.last_run_at) : 0));
+  return collectWallets(queue, {
+    fetchTxs: (w, until, limit) => h.rest<RawEnhancedTx[]>(`/v0/addresses/${w}/transactions?limit=${limit}${until ? `&until=${until}` : ""}`),
+    insertEvents: async (events) => {
+      const { data, error } = await supabaseAdmin.from("wallet_events").upsert(events, { onConflict: "signature,wallet,event_index", ignoreDuplicates: true }).select("id");
+      if (error) throw new Error(error.message);
+      return data?.length ?? 0;
+    },
+    saveState: async (s) => { await supabaseAdmin.from("wallet_collect_state").upsert({ ...s, last_run_at: new Date().toISOString(), updated_at: new Date().toISOString() }); },
+  });
 }
 
 export async function runDailyTopVolume(users: UserRow[]) {
