@@ -41,7 +41,7 @@ export async function withJobRun<T>(
     typeof result === "object" &&
     typeof (result as { error?: unknown }).error === "string"
   )
-    fatal = (result as { error: string }).error;
+    fatal = (result as unknown as { error: string }).error;
   const c = { ...emptyCounters(), ...pick(result) };
   const skipped = !fatal && result == null;
   if (row?.id) {
