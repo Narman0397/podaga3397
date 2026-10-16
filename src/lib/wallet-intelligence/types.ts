@@ -10,8 +10,17 @@ export interface RawEnhancedTx {
   type?: string | null;
   source?: string | null;
   transactionError?: unknown;
-  tokenTransfers?: { fromUserAccount?: string | null; toUserAccount?: string | null; mint?: string | null; tokenAmount?: number | null }[] | null;
-  nativeTransfers?: { fromUserAccount?: string | null; toUserAccount?: string | null; amount?: number | null }[] | null;
+  tokenTransfers?:
+    | {
+        fromUserAccount?: string | null;
+        toUserAccount?: string | null;
+        mint?: string | null;
+        tokenAmount?: number | null;
+      }[]
+    | null;
+  nativeTransfers?:
+    | { fromUserAccount?: string | null; toUserAccount?: string | null; amount?: number | null }[]
+    | null;
 }
 
 export type ParseStatus = "ok" | "failed_tx";
