@@ -14,10 +14,10 @@ describe("Phase 6 wallet graph", () => {
     expect(r.find((x) => x.wallet_b === C)!.status).toBe("observed");
   });
   it("retried evidence does not double count", () => {
-    expect(buildRelations([tr("s1", A, B), tr("s1", A, B)], new Set())[0].frequency).toBe(1);
+    expect(buildRelations([tr("s1", A, B), tr("s1", A, B)], new Set())[0]!.frequency).toBe(1);
   });
   it("exchange counterparty is rejected", () => {
-    expect(buildRelations([tr("s1", A, B)], new Set(), (x) => (x === B ? "Binance" : null))[0].status).toBe("rejected");
+    expect(buildRelations([tr("s1", A, B)], new Set(), (x) => (x === B ? "Binance" : null))[0]!.status).toBe("rejected");
   });
   it("co-entry alone never reaches strong_evidence", () => {
     expect(relationStatus("co_entry", 50, null).status).toBe("suspected");

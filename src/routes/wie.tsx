@@ -59,7 +59,7 @@ function WiePage() {
 
   return (
     <div>
-      <PageHeader title="Wallet Intelligence" subtitle="Hanya untuk simulasi/paper trading. Skor bukan perintah beli dan tidak menjamin profit." />
+      <PageHeader title="Wallet Intelligence" sub="Hanya untuk simulasi/paper trading. Skor bukan perintah beli dan tidak menjamin profit." />
       <div className="mb-4 flex flex-wrap gap-2" role="tablist">
         {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={tab === t ? "btn !py-1" : "btn-ghost !py-1"}>{t}</button>)}
       </div>
@@ -86,7 +86,7 @@ function Overview({ sigs, wallets, rels }: { sigs: Sig[]; wallets: { total: numb
         <Mini label="Wallet sampel ≥5 trade" value={n(wallets.scored)} />
         <Mini label="Relasi berbukti" value={n(rels)} />
         <Mini label="Sinyal belum dinilai" value={sigs.filter((s) => !s.gate_decision).length} />
-        {DEC.map((d) => <Mini key={d} label={d} value={count(d)} cls={DEC_CLS[d]} />)}
+        {DEC.map((d) => <Mini key={d} label={d} value={count(d)} cls={DEC_CLS[d] ?? ""} />)}
       </div>
       <section className="card overflow-x-auto">
         <h2 className="mb-2 font-semibold">Sinyal terbaru</h2>
