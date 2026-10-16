@@ -15,6 +15,13 @@
       "when": 1792132690492,
       "tag": "0001_wie_phase1_memory_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792153544784,
+      "tag": "0002_wie_phase2_3_outcomes_scoring",
+      "breakpoints": true
     }
   ]
 }
