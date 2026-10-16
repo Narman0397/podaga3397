@@ -275,6 +275,90 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_signals: {
+        Row: {
+          delay_sec: number | null
+          detected_at: string | null
+          entry_status: string
+          execution: Json
+          horizons: Json
+          id: string
+          liquidity_usd: number | null
+          mae_pct: number | null
+          mfe_pct: number | null
+          mint: string
+          pool_age_min: number | null
+          price_move_pct: number | null
+          risk_confidence: number
+          risk_reasons: Json
+          risk_recheck: Json | null
+          risk_score: number | null
+          signal_at: string
+          signal_price_sol: number | null
+          signal_version: string
+          signature: string
+          source_price_sol: number | null
+          source_tx_at: string | null
+          updated_at: string
+          volume_h24_usd: number | null
+          wallet: string
+        }
+        Insert: {
+          delay_sec?: number | null
+          detected_at?: string | null
+          entry_status: string
+          execution?: Json
+          horizons?: Json
+          id?: string
+          liquidity_usd?: number | null
+          mae_pct?: number | null
+          mfe_pct?: number | null
+          mint: string
+          pool_age_min?: number | null
+          price_move_pct?: number | null
+          risk_confidence?: number
+          risk_reasons?: Json
+          risk_recheck?: Json | null
+          risk_score?: number | null
+          signal_at?: string
+          signal_price_sol?: number | null
+          signal_version: string
+          signature: string
+          source_price_sol?: number | null
+          source_tx_at?: string | null
+          updated_at?: string
+          volume_h24_usd?: number | null
+          wallet: string
+        }
+        Update: {
+          delay_sec?: number | null
+          detected_at?: string | null
+          entry_status?: string
+          execution?: Json
+          horizons?: Json
+          id?: string
+          liquidity_usd?: number | null
+          mae_pct?: number | null
+          mfe_pct?: number | null
+          mint?: string
+          pool_age_min?: number | null
+          price_move_pct?: number | null
+          risk_confidence?: number
+          risk_reasons?: Json
+          risk_recheck?: Json | null
+          risk_score?: number | null
+          signal_at?: string
+          signal_price_sol?: number | null
+          signal_version?: string
+          signature?: string
+          source_price_sol?: number | null
+          source_tx_at?: string | null
+          updated_at?: string
+          volume_h24_usd?: number | null
+          wallet?: string
+        }
+        Relationships: []
+      }
       wallet_tags: {
         Row: {
           address: string

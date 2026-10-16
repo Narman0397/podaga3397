@@ -22,6 +22,13 @@
       "when": 1792153544784,
       "tag": "0002_wie_phase2_3_outcomes_scoring",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792155047380,
+      "tag": "0003_wie_phase4_5_signals",
+      "breakpoints": true
     }
   ]
 }
