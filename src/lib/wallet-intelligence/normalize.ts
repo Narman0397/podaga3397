@@ -54,6 +54,14 @@ export function normalizeWalletTxs(
       }
     }
     const sol = touchedSol ? lamports / LAMPORTS : null;
+    // Largest SOL counterparty (kept as evidence for the wallet graph; null when unknown).
+    const cp = new Map<string, number>();
+    for (const n of tx.nativeTransfers ?? []) {
+      if (typeof n?.amount !== "number") continue;
+      const other = n.toUserAccount === wallet ? n.fromUserAccount : n.fromUserAccount === wallet ? n.toUserAccount : null;
+      if (other && other !== wallet) cp.set(other, (cp.get(other) ?? 0) + n.amount);
+    }
+    const counterparty = [...cp.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
     const legs = (tx.tokenTransfers ?? []).filter(
       (t) => t?.mint && (t.toUserAccount === wallet || t.fromUserAccount === wallet),
@@ -66,7 +74,7 @@ export function normalizeWalletTxs(
       source,
       parse_status: failed ? ("failed_tx" as const) : ("ok" as const),
       completeness: ts && slot ? ("full" as const) : ("partial" as const),
-      raw_ref: { type, dex: tx.source ?? null },
+      raw_ref: { type, dex: tx.source ?? null, counterparty },
       normalizer_version: NORMALIZER_VERSION,
     };
 
