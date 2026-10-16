@@ -80,6 +80,108 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_collect_state: {
+        Row: {
+          events_count: number
+          history_complete: boolean
+          last_error: string | null
+          last_run_at: string | null
+          newest_block_time: string | null
+          newest_signature: string | null
+          possible_gap: boolean
+          updated_at: string
+          wallet: string
+        }
+        Insert: {
+          events_count?: number
+          history_complete?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          newest_block_time?: string | null
+          newest_signature?: string | null
+          possible_gap?: boolean
+          updated_at?: string
+          wallet: string
+        }
+        Update: {
+          events_count?: number
+          history_complete?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          newest_block_time?: string | null
+          newest_signature?: string | null
+          possible_gap?: boolean
+          updated_at?: string
+          wallet?: string
+        }
+        Relationships: []
+      }
+      wallet_events: {
+        Row: {
+          activity: string
+          block_time: string | null
+          completeness: string
+          direction: string | null
+          event_index: number
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          mint: string | null
+          normalizer_version: string
+          parse_status: string
+          price_sol: number | null
+          raw_ref: Json
+          signature: string
+          slot: number | null
+          sol_amount: number | null
+          source: string
+          token_amount: number | null
+          wallet: string
+        }
+        Insert: {
+          activity: string
+          block_time?: string | null
+          completeness: string
+          direction?: string | null
+          event_index: number
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          mint?: string | null
+          normalizer_version: string
+          parse_status: string
+          price_sol?: number | null
+          raw_ref?: Json
+          signature: string
+          slot?: number | null
+          sol_amount?: number | null
+          source: string
+          token_amount?: number | null
+          wallet: string
+        }
+        Update: {
+          activity?: string
+          block_time?: string | null
+          completeness?: string
+          direction?: string | null
+          event_index?: number
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          mint?: string | null
+          normalizer_version?: string
+          parse_status?: string
+          price_sol?: number | null
+          raw_ref?: Json
+          signature?: string
+          slot?: number | null
+          sol_amount?: number | null
+          source?: string
+          token_amount?: number | null
+          wallet?: string
+        }
+        Relationships: []
+      }
       wallet_tags: {
         Row: {
           address: string
@@ -113,12 +215,66 @@ export type Database = {
         }
         Relationships: []
       }
+      wie_job_runs: {
+        Row: {
+          duration_ms: number | null
+          error_count: number
+          error_summary: string | null
+          finished_at: string | null
+          id: string
+          job_name: string
+          meta: Json
+          records_inserted: number
+          records_seen: number
+          records_skipped: number
+          records_updated: number
+          source: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          duration_ms?: number | null
+          error_count?: number
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          meta?: Json
+          records_inserted?: number
+          records_seen?: number
+          records_skipped?: number
+          records_updated?: number
+          source?: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          duration_ms?: number | null
+          error_count?: number
+          error_summary?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          meta?: Json
+          records_inserted?: number
+          records_seen?: number
+          records_skipped?: number
+          records_updated?: number
+          source?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      wie_try_lock: {
+        Args: { _every_ms: number; _job: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

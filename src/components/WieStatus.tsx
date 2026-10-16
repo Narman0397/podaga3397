@@ -1,0 +1,80 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { isStale } from "@/lib/wallet-intelligence/jobs";
+
+type Run = { id: string; job_name: string; status: string; started_at: string; finished_at: string | null; duration_ms: number | null; records_seen: number; records_inserted: number; records_skipped: number; error_count: number; error_summary: string | null };
+type View = { state: "loading" } | { state: "guest" } | { state: "error"; msg: string } | { state: "ok"; runs: Run[]; events: number | null; wallets: number | null; gaps: number | null };
+
+const JOB_LABEL: Record<string, string> = { "wie-collect": "Collector wallet", topvol: "Top volume harian", alpha: "Alpha Hunter" };
+const fmt = (s: string | null) => (s ? new Date(s).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" }) : "—");
+
+/** WIE V2.1 Job Monitor + collector status. Real data only; empty and stale states shown explicitly. */
+export function WieStatus() {
+  const [v, setV] = useState<View>({ state: "loading" });
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) { if (alive) setV({ state: "guest" }); return; }
+      const [runs, ev, st, gap] = await Promise.all([
+        supabase.from("wie_job_runs").select("id, job_name, status, started_at, finished_at, duration_ms, records_seen, records_inserted, records_skipped, error_count, error_summary").order("started_at", { ascending: false }).limit(15),
+        supabase.from("wallet_events").select("id", { count: "exact", head: true }),
+        supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }),
+        supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }).eq("possible_gap", true),
+      ]);
+      if (!alive) return;
+      if (runs.error) { setV({ state: "error", msg: "Status job tidak dapat dimuat." }); return; }
+      setV({ state: "ok", runs: (runs.data ?? []) as Run[], events: ev.count, wallets: st.count, gaps: gap.count });
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  if (v.state === "loading") return <div className="card mb-6 text-sm text-muted-foreground">Memuat status WIE…</div>;
+  if (v.state === "guest") return <div className="card mb-6 text-sm text-muted-foreground">Masuk untuk melihat status Wallet Intelligence Engine.</div>;
+  if (v.state === "error") return <div className="card mb-6 text-sm text-destructive">{v.msg}</div>;
+
+  const lastCollect = v.runs.find((r) => r.job_name === "wie-collect" && r.status !== "skipped");
+  const stale = isStale(lastCollect?.finished_at, 2 * 3_600_000);
+  return (
+    <section className="card mb-6 space-y-4" aria-label="Status Wallet Intelligence Engine">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">WIE V2.1 · Job Monitor</h2>
+        <span className={stale ? "text-xs text-warn" : "text-xs text-signal"}>
+          {lastCollect ? (stale ? `Data collector usang · terakhir ${fmt(lastCollect.finished_at)}` : `Collector aktif · ${fmt(lastCollect.finished_at)}`) : "Collector belum pernah berjalan (butuh key Helius aktif)"}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Mini label="Event wallet tersimpan" value={v.events ?? "—"} />
+        <Mini label="Wallet dipantau" value={v.wallets ?? "—"} />
+        <Mini label="Kemungkinan celah histori" value={v.gaps ?? "—"} />
+        <Mini label="Job gagal (15 terakhir)" value={v.runs.filter((r) => r.status === "failed").length} />
+      </div>
+      {v.runs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Belum ada riwayat job. Riwayat muncul setelah worker latar belakang berjalan.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="text-muted-foreground"><tr><th className="py-1 pr-3">Job</th><th className="pr-3">Status</th><th className="pr-3">Mulai</th><th className="pr-3">Durasi</th><th className="pr-3">Dilihat/Baru/Lewat</th><th>Error</th></tr></thead>
+            <tbody>
+              {v.runs.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="py-1 pr-3">{JOB_LABEL[r.job_name] ?? r.job_name}</td>
+                  <td className={r.status === "failed" ? "pr-3 text-destructive" : r.status === "success" ? "pr-3 text-signal" : "pr-3 text-muted-foreground"}>{r.status}</td>
+                  <td className="pr-3 font-mono">{fmt(r.started_at)}</td>
+                  <td className="pr-3 font-mono">{r.duration_ms != null ? `${(r.duration_ms / 1000).toFixed(1)}s` : "—"}</td>
+                  <td className="pr-3 font-mono">{r.records_seen}/{r.records_inserted}/{r.records_skipped}</td>
+                  <td className="max-w-[16rem] truncate text-muted-foreground" title={r.error_summary ?? ""}>{r.error_summary ?? (r.error_count ? `${r.error_count} error` : "—")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Histori dari sumber hanya mencakup transaksi terbaru yang dikembalikan penyedia data; tidak diklaim lengkap.</p>
+    </section>
+  );
+}
+
+function Mini({ label, value }: { label: string; value: number | string }) {
+  return <div className="rounded-lg border border-border p-3"><div className="text-xs text-muted-foreground">{label}</div><div className="mt-1 font-mono text-lg font-semibold">{value}</div></div>;
+}
