@@ -22,15 +22,17 @@ export function WieStatus() {
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) { if (alive) setV({ state: "guest" }); return; }
-      const [runs, ev, st, gap] = await Promise.all([
-        supabase.from("wie_job_runs").select("id, job_name, status, started_at, finished_at, duration_ms, records_seen, records_inserted, records_skipped, error_count, error_summary").order("started_at", { ascending: false }).limit(15),
+      const [runs, ev, st, gap, out, sh] = await Promise.all([
+        supabase.from("wie_job_runs").select("id, job_name, status, started_at, finished_at, duration_ms, records_seen, records_inserted, records_skipped, error_count, error_summary").order("started_at", { ascending: false }).limit(20),
         supabase.from("wallet_events").select("id", { count: "exact", head: true }),
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }),
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }).eq("possible_gap", true),
+        supabase.from("wallet_outcomes").select("id", { count: "exact", head: true }),
+        supabase.from("wallet_score_history").select("id", { count: "exact", head: true }),
       ]);
       if (!alive) return;
       if (runs.error) { setV({ state: "error", msg: "Status job tidak dapat dimuat." }); return; }
-      setV({ state: "ok", runs: (runs.data ?? []) as Run[], events: ev.count, wallets: st.count, gaps: gap.count });
+      setV({ state: "ok", runs: (runs.data ?? []) as Run[], events: ev.count, wallets: st.count, gaps: gap.count, outcomes: out.count, scoreHistory: sh.count });
     })();
     return () => { alive = false; };
   }, []);
