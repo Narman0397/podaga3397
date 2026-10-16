@@ -11,3 +11,5 @@
 
 - [ ] Inspeksi F7p3dFrjRTbtRp8FRF6qHLomXbKRBzpvBLjtQcfcgmNe di Memory — menunggu key Helius aktif (0/11 aktif)
 - [ ] Pemburu Alpha Whale pertama — menunggu key Helius aktif
+- [x] WIE V2.1 Fase 0 audit + Fase 1 (wallet_events, collector, job log, atomic locks, Job Monitor).
+- [ ] WIE Fase 2–8 (outcome engine, scoring v2, early entry, token risk, graph, gate/backtest, dashboard) — next turns.
