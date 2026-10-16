@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { startCloudSync } from "@/lib/cloud-sync";
 import { pnlPct, startTracker, useTracker } from "@/lib/tracker";
 import { startCabalStream } from "@/lib/stream";
-import { Activity, KeyRound, GitFork, Rocket, ShieldCheck, Zap, Bell, Database, Wallet } from "lucide-react";
+import { Activity, KeyRound, GitFork, Rocket, ShieldCheck, Zap, Bell, Database, Wallet, Brain } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";

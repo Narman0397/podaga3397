@@ -74,9 +74,10 @@ export function buildRelations(events: GraphEvent[], tracked: Set<string>, isSer
     list.sort((p, q) => Date.parse(p.block_time!) - Date.parse(q.block_time!));
     for (let i = 0; i < list.length; i++)
       for (let j = i + 1; j < list.length; j++) {
-        const dt = (Date.parse(list[j].block_time!) - Date.parse(list[i].block_time!)) / 1000;
+        const p = list[i]!, q = list[j]!;
+        const dt = (Date.parse(q.block_time!) - Date.parse(p.block_time!)) / 1000;
         if (dt > GRAPH_LIMITS.coEntryWindowSec) break;
-        if (list[i].wallet !== list[j].wallet) add(list[i].wallet, list[j].wallet, "co_entry", mint, { signature: list[j].signature, at: list[j].block_time, mint });
+        if (p.wallet !== q.wallet) add(p.wallet, q.wallet, "co_entry", mint, { signature: q.signature, at: q.block_time, mint });
       }
   }
 
