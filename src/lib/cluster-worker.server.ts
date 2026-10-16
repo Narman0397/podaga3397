@@ -1,4 +1,5 @@
 import { CEX_HOT_WALLETS, classifyPerf, isAlphaWhale, pickTopVolume, goldenSetup, tokenEdgeScore, serverIntel, type MintTx, PUMP_PROGRAMS, TRACE_TTL, curvePctOf, proceedsSol, bundleMetrics, type TopTok } from "./edge";
+import { runWiePhase678 } from "./wallet-intelligence/phase678-jobs.server";
 import { exitDecision, dumpSignal, mirrorSignal, guessDeployer, pairRank, suspiciousDrop, type ExitGuard } from "./exit-rules";
 // Server-side 24/7 cluster worker: dual-track deep trace (DEX/Raydium + Pre-Raydium Pump.fun) and auto-saves clusters per user.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -132,6 +133,8 @@ export async function runClusterWorker() {
   const collect = await withJobRun("wie-collect", "cron", () => runWieCollector(users ?? []));
   const phase23 = await runWiePhase23(); // Phase 2: outcomes every 1h; Phase 3: scoring every 6h
   const phase45 = await runWiePhase45().catch((e) => ({ error: String(e) })); // Phase 4–5: signals every 5m
+  const phase678 = await runWiePhase678().catch((e) => ({ error: String(e) })); // Phase 6–7: graph 6h, gate 5m, backtest 24h
+  if (phase678) console.log("wie-phase678", JSON.stringify(phase678).slice(0, 300));
   if (phase45) console.log("wie-signals", JSON.stringify(phase45).slice(0, 300));
   if (collect) console.log("wie-collect", JSON.stringify(collect).slice(0, 300));
   if (phase23.outcomes || phase23.scoring) console.log("wie-phase23", JSON.stringify(phase23).slice(0, 400));
