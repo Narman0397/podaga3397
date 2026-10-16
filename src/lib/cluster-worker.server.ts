@@ -6,6 +6,7 @@ import { tryLock, withJobRun } from "./wallet-intelligence/job-runs.server";
 import { collectWallets } from "./wallet-intelligence/collector";
 import { emptyCounters } from "./wallet-intelligence/jobs";
 import type { RawEnhancedTx } from "./wallet-intelligence/types";
+import { runWiePhase23 } from "./wallet-intelligence/outcome-jobs.server";
 
 type Key = { key: string; status?: string };
 type Tx = { feePayer: string; timestamp: number; nativeTransfers?: { fromUserAccount: string; toUserAccount: string; amount: number }[] };
@@ -128,7 +129,9 @@ export async function runClusterWorker() {
   const daily = await withJobRun("topvol", "cron", () => runDailyTopVolume(users ?? []).catch(note("topvol")));
   const alpha = await withJobRun("alpha", "cron", () => runAlphaHunter(users ?? []).catch(note("alpha")));
   const collect = await withJobRun("wie-collect", "cron", () => runWieCollector(users ?? []));
+  const phase23 = await runWiePhase23(); // Phase 2: outcomes every 1h; Phase 3: scoring every 6h
   if (collect) console.log("wie-collect", JSON.stringify(collect).slice(0, 300));
+  if (phase23.outcomes || phase23.scoring) console.log("wie-phase23", JSON.stringify(phase23).slice(0, 400));
   if (daily || alpha) console.log("daily/alpha", JSON.stringify({ daily, alpha }).slice(0, 500));
   const autoBuy = await runServerAutoBuy(users ?? [], lastRun).catch((e) => ({ error: String(e) }));
   const exits = await runServerExitTracker().catch((e) => ({ error: String(e) }));

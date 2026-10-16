@@ -182,6 +182,99 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_outcomes: {
+        Row: {
+          buy_count: number
+          computed_at: string
+          first_buy_at: string | null
+          hold_sec: number | null
+          id: string
+          is_closed: boolean
+          last_sell_at: string | null
+          mint: string
+          outcome_version: string
+          roi: number | null
+          sell_count: number
+          sol_received: number
+          sol_spent: number
+          wallet: string
+        }
+        Insert: {
+          buy_count?: number
+          computed_at?: string
+          first_buy_at?: string | null
+          hold_sec?: number | null
+          id?: string
+          is_closed?: boolean
+          last_sell_at?: string | null
+          mint: string
+          outcome_version?: string
+          roi?: number | null
+          sell_count?: number
+          sol_received?: number
+          sol_spent?: number
+          wallet: string
+        }
+        Update: {
+          buy_count?: number
+          computed_at?: string
+          first_buy_at?: string | null
+          hold_sec?: number | null
+          id?: string
+          is_closed?: boolean
+          last_sell_at?: string | null
+          mint?: string
+          outcome_version?: string
+          roi?: number | null
+          sell_count?: number
+          sol_received?: number
+          sol_spent?: number
+          wallet?: string
+        }
+        Relationships: []
+      }
+      wallet_score_history: {
+        Row: {
+          avg_roi: number
+          cls: string
+          confidence: number
+          hold_sec: number
+          id: string
+          score: number
+          score_version: string
+          scored_at: string
+          tokens_closed: number
+          wallet: string
+          win_rate: number
+        }
+        Insert: {
+          avg_roi: number
+          cls: string
+          confidence: number
+          hold_sec: number
+          id?: string
+          score: number
+          score_version?: string
+          scored_at?: string
+          tokens_closed: number
+          wallet: string
+          win_rate: number
+        }
+        Update: {
+          avg_roi?: number
+          cls?: string
+          confidence?: number
+          hold_sec?: number
+          id?: string
+          score?: number
+          score_version?: string
+          scored_at?: string
+          tokens_closed?: number
+          wallet?: string
+          win_rate?: number
+        }
+        Relationships: []
+      }
       wallet_tags: {
         Row: {
           address: string
