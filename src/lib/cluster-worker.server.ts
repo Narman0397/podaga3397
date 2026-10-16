@@ -7,6 +7,7 @@ import { collectWallets } from "./wallet-intelligence/collector";
 import { emptyCounters } from "./wallet-intelligence/jobs";
 import type { RawEnhancedTx } from "./wallet-intelligence/types";
 import { runWiePhase23 } from "./wallet-intelligence/outcome-jobs.server";
+import { runWiePhase45 } from "./wallet-intelligence/signal-jobs.server";
 
 type Key = { key: string; status?: string };
 type Tx = { feePayer: string; timestamp: number; nativeTransfers?: { fromUserAccount: string; toUserAccount: string; amount: number }[] };
@@ -130,6 +131,8 @@ export async function runClusterWorker() {
   const alpha = await withJobRun("alpha", "cron", () => runAlphaHunter(users ?? []).catch(note("alpha")));
   const collect = await withJobRun("wie-collect", "cron", () => runWieCollector(users ?? []));
   const phase23 = await runWiePhase23(); // Phase 2: outcomes every 1h; Phase 3: scoring every 6h
+  const phase45 = await runWiePhase45().catch((e) => ({ error: String(e) })); // Phase 4–5: signals every 5m
+  if (phase45) console.log("wie-signals", JSON.stringify(phase45).slice(0, 300));
   if (collect) console.log("wie-collect", JSON.stringify(collect).slice(0, 300));
   if (phase23.outcomes || phase23.scoring) console.log("wie-phase23", JSON.stringify(phase23).slice(0, 400));
   if (daily || alpha) console.log("daily/alpha", JSON.stringify({ daily, alpha }).slice(0, 500));

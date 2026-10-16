@@ -14,8 +14,8 @@
 - [x] WIE V2.1 Fase 0 audit + Fase 1 (wallet_events, collector, job log, atomic locks, Job Monitor).
 - [x] WIE Fase 2 — Outcome Engine (wallet_outcomes, computeOutcomes, runOutcomeJob setiap 1h).
 - [x] WIE Fase 3 — Alpha Scoring v2 (wallet_score_history, scoreWalletV2, confidence, versi, histori; wie-score setiap 6h).
-- [ ] WIE Fase 4 — early entry + attribution.
-- [ ] WIE Fase 5 — token risk + execution.
+- [x] WIE Fase 4 — early entry + attribution (wallet_signals, wie-signals tiap 5m).
+- [x] WIE Fase 5 — token risk + execution.
 - [ ] WIE Fase 6 — evidence-based wallet graph.
 - [ ] WIE Fase 7 — gate + temporal backtest.
 - [ ] WIE Fase 8 — full dashboard pages.
