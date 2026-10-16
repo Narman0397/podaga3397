@@ -6,6 +6,7 @@ import { tryLock, withJobRun } from "./wallet-intelligence/job-runs.server";
 import { collectWallets } from "./wallet-intelligence/collector";
 import { emptyCounters } from "./wallet-intelligence/jobs";
 import type { RawEnhancedTx } from "./wallet-intelligence/types";
+import { runWiePhase23 } from "./wallet-intelligence/outcome-jobs.server";
 
 type Key = { key: string; status?: string };
 type Tx = { feePayer: string; timestamp: number; nativeTransfers?: { fromUserAccount: string; toUserAccount: string; amount: number }[] };
