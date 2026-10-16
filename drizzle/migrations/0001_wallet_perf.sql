@@ -1,1 +1,0 @@
-ALTER TABLE public.wallet_tags ADD COLUMN IF NOT EXISTS perf jsonb;
