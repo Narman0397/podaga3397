@@ -10,33 +10,207 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AuditRouteImport } from './routes/audit'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as KeysRouteImport } from './routes/keys'
+import { Route as LifecycleRouteImport } from './routes/lifecycle'
+import { Route as MemoryRouteImport } from './routes/memory'
+import { Route as PaperRouteImport } from './routes/paper'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as SignalsRouteImport } from './routes/signals'
+import { Route as TraceRouteImport } from './routes/trace'
+import { Route as ApiPublicHooksClusterWorkerRouteImport } from './routes/api/public/hooks/cluster-worker'
+import { Route as ApiPublicHooksHeliusRouteImport } from './routes/api/public/hooks/helius'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KeysRoute = KeysRouteImport.update({
+  id: '/keys',
+  path: '/keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LifecycleRoute = LifecycleRouteImport.update({
+  id: '/lifecycle',
+  path: '/lifecycle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoryRoute = MemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaperRoute = PaperRouteImport.update({
+  id: '/paper',
+  path: '/paper',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScannerRoute = ScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignalsRoute = SignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TraceRoute = TraceRouteImport.update({
+  id: '/trace',
+  path: '/trace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksClusterWorkerRoute =
+  ApiPublicHooksClusterWorkerRouteImport.update({
+    id: '/api/public/hooks/cluster-worker',
+    path: '/api/public/hooks/cluster-worker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksHeliusRoute = ApiPublicHooksHeliusRouteImport.update({
+  id: '/api/public/hooks/helius',
+  path: '/api/public/hooks/helius',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/audit': typeof AuditRoute
+  '/auth': typeof AuthRoute
+  '/keys': typeof KeysRoute
+  '/lifecycle': typeof LifecycleRoute
+  '/memory': typeof MemoryRoute
+  '/paper': typeof PaperRoute
+  '/portfolio': typeof PortfolioRoute
+  '/scanner': typeof ScannerRoute
+  '/signals': typeof SignalsRoute
+  '/trace': typeof TraceRoute
+  '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
+  '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/audit': typeof AuditRoute
+  '/auth': typeof AuthRoute
+  '/keys': typeof KeysRoute
+  '/lifecycle': typeof LifecycleRoute
+  '/memory': typeof MemoryRoute
+  '/paper': typeof PaperRoute
+  '/portfolio': typeof PortfolioRoute
+  '/scanner': typeof ScannerRoute
+  '/signals': typeof SignalsRoute
+  '/trace': typeof TraceRoute
+  '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
+  '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
+  '/audit': typeof AuditRoute
+  '/auth': typeof AuthRoute
+  '/keys': typeof KeysRoute
+  '/lifecycle': typeof LifecycleRoute
+  '/memory': typeof MemoryRoute
+  '/paper': typeof PaperRoute
+  '/portfolio': typeof PortfolioRoute
+  '/scanner': typeof ScannerRoute
+  '/signals': typeof SignalsRoute
+  '/trace': typeof TraceRoute
+  '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
+  '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/alerts'
+    | '/audit'
+    | '/auth'
+    | '/keys'
+    | '/lifecycle'
+    | '/memory'
+    | '/paper'
+    | '/portfolio'
+    | '/scanner'
+    | '/signals'
+    | '/trace'
+    | '/api/public/hooks/cluster-worker'
+    | '/api/public/hooks/helius'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/alerts'
+    | '/audit'
+    | '/auth'
+    | '/keys'
+    | '/lifecycle'
+    | '/memory'
+    | '/paper'
+    | '/portfolio'
+    | '/scanner'
+    | '/signals'
+    | '/trace'
+    | '/api/public/hooks/cluster-worker'
+    | '/api/public/hooks/helius'
+  id:
+    | '__root__'
+    | '/'
+    | '/alerts'
+    | '/audit'
+    | '/auth'
+    | '/keys'
+    | '/lifecycle'
+    | '/memory'
+    | '/paper'
+    | '/portfolio'
+    | '/scanner'
+    | '/signals'
+    | '/trace'
+    | '/api/public/hooks/cluster-worker'
+    | '/api/public/hooks/helius'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
+  AuditRoute: typeof AuditRoute
+  AuthRoute: typeof AuthRoute
+  KeysRoute: typeof KeysRoute
+  LifecycleRoute: typeof LifecycleRoute
+  MemoryRoute: typeof MemoryRoute
+  PaperRoute: typeof PaperRoute
+  PortfolioRoute: typeof PortfolioRoute
+  ScannerRoute: typeof ScannerRoute
+  SignalsRoute: typeof SignalsRoute
+  TraceRoute: typeof TraceRoute
+  ApiPublicHooksClusterWorkerRoute: typeof ApiPublicHooksClusterWorkerRoute
+  ApiPublicHooksHeliusRoute: typeof ApiPublicHooksHeliusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +222,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/keys': {
+      id: '/keys'
+      path: '/keys'
+      fullPath: '/keys'
+      preLoaderRoute: typeof KeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lifecycle': {
+      id: '/lifecycle'
+      path: '/lifecycle'
+      fullPath: '/lifecycle'
+      preLoaderRoute: typeof LifecycleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memory': {
+      id: '/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof MemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paper': {
+      id: '/paper'
+      path: '/paper'
+      fullPath: '/paper'
+      preLoaderRoute: typeof PaperRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scanner': {
+      id: '/scanner'
+      path: '/scanner'
+      fullPath: '/scanner'
+      preLoaderRoute: typeof ScannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signals': {
+      id: '/signals'
+      path: '/signals'
+      fullPath: '/signals'
+      preLoaderRoute: typeof SignalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trace': {
+      id: '/trace'
+      path: '/trace'
+      fullPath: '/trace'
+      preLoaderRoute: typeof TraceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/cluster-worker': {
+      id: '/api/public/hooks/cluster-worker'
+      path: '/api/public/hooks/cluster-worker'
+      fullPath: '/api/public/hooks/cluster-worker'
+      preLoaderRoute: typeof ApiPublicHooksClusterWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/helius': {
+      id: '/api/public/hooks/helius'
+      path: '/api/public/hooks/helius'
+      fullPath: '/api/public/hooks/helius'
+      preLoaderRoute: typeof ApiPublicHooksHeliusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
+  AuditRoute: AuditRoute,
+  AuthRoute: AuthRoute,
+  KeysRoute: KeysRoute,
+  LifecycleRoute: LifecycleRoute,
+  MemoryRoute: MemoryRoute,
+  PaperRoute: PaperRoute,
+  PortfolioRoute: PortfolioRoute,
+  ScannerRoute: ScannerRoute,
+  SignalsRoute: SignalsRoute,
+  TraceRoute: TraceRoute,
+  ApiPublicHooksClusterWorkerRoute: ApiPublicHooksClusterWorkerRoute,
+  ApiPublicHooksHeliusRoute: ApiPublicHooksHeliusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
