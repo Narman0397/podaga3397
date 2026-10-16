@@ -233,6 +233,54 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_relations: {
+        Row: {
+          confidence: number
+          evidence: Json
+          first_seen: string | null
+          frequency: number
+          id: string
+          last_seen: string | null
+          reasons: Json
+          relation: string
+          rule_version: string
+          status: string
+          updated_at: string
+          wallet_a: string
+          wallet_b: string
+        }
+        Insert: {
+          confidence?: number
+          evidence?: Json
+          first_seen?: string | null
+          frequency?: number
+          id?: string
+          last_seen?: string | null
+          reasons?: Json
+          relation: string
+          rule_version: string
+          status?: string
+          updated_at?: string
+          wallet_a: string
+          wallet_b: string
+        }
+        Update: {
+          confidence?: number
+          evidence?: Json
+          first_seen?: string | null
+          frequency?: number
+          id?: string
+          last_seen?: string | null
+          reasons?: Json
+          relation?: string
+          rule_version?: string
+          status?: string
+          updated_at?: string
+          wallet_a?: string
+          wallet_b?: string
+        }
+        Relationships: []
+      }
       wallet_score_history: {
         Row: {
           avg_roi: number
@@ -281,6 +329,9 @@ export type Database = {
           detected_at: string | null
           entry_status: string
           execution: Json
+          gate: Json | null
+          gate_at: string | null
+          gate_decision: string | null
           horizons: Json
           id: string
           liquidity_usd: number | null
@@ -308,6 +359,9 @@ export type Database = {
           detected_at?: string | null
           entry_status: string
           execution?: Json
+          gate?: Json | null
+          gate_at?: string | null
+          gate_decision?: string | null
           horizons?: Json
           id?: string
           liquidity_usd?: number | null
@@ -335,6 +389,9 @@ export type Database = {
           detected_at?: string | null
           entry_status?: string
           execution?: Json
+          gate?: Json | null
+          gate_at?: string | null
+          gate_decision?: string | null
           horizons?: Json
           id?: string
           liquidity_usd?: number | null
@@ -389,6 +446,54 @@ export type Database = {
           seen?: number
           tag?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      wie_backtests: {
+        Row: {
+          backtest_version: string
+          baseline: Json
+          created_at: string
+          horizon: string
+          id: string
+          params: Json
+          test: Json
+          test_from: string | null
+          test_to: string | null
+          train: Json
+          train_from: string | null
+          train_to: string | null
+          warnings: Json
+        }
+        Insert: {
+          backtest_version: string
+          baseline?: Json
+          created_at?: string
+          horizon: string
+          id?: string
+          params?: Json
+          test?: Json
+          test_from?: string | null
+          test_to?: string | null
+          train?: Json
+          train_from?: string | null
+          train_to?: string | null
+          warnings?: Json
+        }
+        Update: {
+          backtest_version?: string
+          baseline?: Json
+          created_at?: string
+          horizon?: string
+          id?: string
+          params?: Json
+          test?: Json
+          test_from?: string | null
+          test_to?: string | null
+          train?: Json
+          train_from?: string | null
+          train_to?: string | null
+          warnings?: Json
         }
         Relationships: []
       }

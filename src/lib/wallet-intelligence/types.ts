@@ -1,6 +1,6 @@
 // WIE V2.1 shared types. Unknown values are `null`, never 0.
 
-export const NORMALIZER_VERSION = "wie-norm-1.0.0";
+export const NORMALIZER_VERSION = "wie-norm-1.1.0";
 
 /** Minimal subset of a Helius enhanced transaction that the normalizer reads. */
 export interface RawEnhancedTx {
@@ -41,7 +41,7 @@ export interface WalletEvent {
   source: string;
   parse_status: ParseStatus;
   completeness: Completeness;
-  raw_ref: { type: string | null; dex: string | null };
+  raw_ref: { type: string | null; dex: string | null; counterparty?: string | null };
   normalizer_version: string;
 }
 

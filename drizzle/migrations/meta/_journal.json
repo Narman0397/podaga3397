@@ -29,6 +29,13 @@
       "when": 1792155047380,
       "tag": "0003_wie_phase4_5_signals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792164807541,
+      "tag": "0004_wie_phase6_8_graph_gate_backtest",
+      "breakpoints": true
     }
   ]
 }

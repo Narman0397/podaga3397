@@ -11,6 +11,9 @@ const JOB_LABEL: Record<string, string> = {
   "wie-outcomes": "Outcome Engine (F2)",
   "wie-score": "Alpha Scoring v2 (F3)",
   "wie-signals": "Sinyal, risiko & eksekusi (F4–5)",
+  "wie-graph": "Wallet Graph (F6)",
+  "wie-gate": "Intelligence Gate (F7)",
+  "wie-backtest": "Backtest temporal (F7)",
   topvol: "Top volume harian",
   alpha: "Alpha Hunter",
 };

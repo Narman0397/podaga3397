@@ -21,6 +21,7 @@ import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as TraceRouteImport } from './routes/trace'
+import { Route as WieRouteImport } from './routes/wie'
 import { Route as ApiPublicHooksClusterWorkerRouteImport } from './routes/api/public/hooks/cluster-worker'
 import { Route as ApiPublicHooksHeliusRouteImport } from './routes/api/public/hooks/helius'
 
@@ -84,6 +85,11 @@ const TraceRoute = TraceRouteImport.update({
   path: '/trace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WieRoute = WieRouteImport.update({
+  id: '/wie',
+  path: '/wie',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksClusterWorkerRoute =
   ApiPublicHooksClusterWorkerRouteImport.update({
     id: '/api/public/hooks/cluster-worker',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/scanner': typeof ScannerRoute
   '/signals': typeof SignalsRoute
   '/trace': typeof TraceRoute
+  '/wie': typeof WieRoute
   '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
   '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/scanner': typeof ScannerRoute
   '/signals': typeof SignalsRoute
   '/trace': typeof TraceRoute
+  '/wie': typeof WieRoute
   '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
   '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/scanner': typeof ScannerRoute
   '/signals': typeof SignalsRoute
   '/trace': typeof TraceRoute
+  '/wie': typeof WieRoute
   '/api/public/hooks/cluster-worker': typeof ApiPublicHooksClusterWorkerRoute
   '/api/public/hooks/helius': typeof ApiPublicHooksHeliusRoute
 }
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/scanner'
     | '/signals'
     | '/trace'
+    | '/wie'
     | '/api/public/hooks/cluster-worker'
     | '/api/public/hooks/helius'
   fileRoutesByTo: FileRoutesByTo
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/scanner'
     | '/signals'
     | '/trace'
+    | '/wie'
     | '/api/public/hooks/cluster-worker'
     | '/api/public/hooks/helius'
   id:
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/scanner'
     | '/signals'
     | '/trace'
+    | '/wie'
     | '/api/public/hooks/cluster-worker'
     | '/api/public/hooks/helius'
   fileRoutesById: FileRoutesById
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   ScannerRoute: typeof ScannerRoute
   SignalsRoute: typeof SignalsRoute
   TraceRoute: typeof TraceRoute
+  WieRoute: typeof WieRoute
   ApiPublicHooksClusterWorkerRoute: typeof ApiPublicHooksClusterWorkerRoute
   ApiPublicHooksHeliusRoute: typeof ApiPublicHooksHeliusRoute
 }
@@ -299,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TraceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wie': {
+      id: '/wie'
+      path: '/wie'
+      fullPath: '/wie'
+      preLoaderRoute: typeof WieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/cluster-worker': {
       id: '/api/public/hooks/cluster-worker'
       path: '/api/public/hooks/cluster-worker'
@@ -329,6 +349,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScannerRoute: ScannerRoute,
   SignalsRoute: SignalsRoute,
   TraceRoute: TraceRoute,
+  WieRoute: WieRoute,
   ApiPublicHooksClusterWorkerRoute: ApiPublicHooksClusterWorkerRoute,
   ApiPublicHooksHeliusRoute: ApiPublicHooksHeliusRoute,
 }

@@ -82,6 +82,7 @@ const SUB = [
   { to: "/lifecycle", label: "Pump.fun Lifecycle", icon: Rocket },
   { to: "/signals", label: "Signal Monitor", icon: Zap },
   { to: "/memory", label: "Cluster Memory", icon: Database },
+  { to: "/wie", label: "Wallet Intelligence", icon: Brain },
   { to: "/paper", label: "Paper Trading", icon: Wallet },
   { to: "/keys", label: "Helius Key Pool", icon: KeyRound },
   { to: "/alerts", label: "Alert Delivery", icon: Bell },
