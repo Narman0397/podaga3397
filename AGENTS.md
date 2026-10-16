@@ -9,7 +9,7 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Background cluster tracing runs server-side in src/lib/cluster-worker.server.ts via pg_cron -> /api/public/hooks/cluster-worker; a DB replay guard (cluster_worker row) limits runs because the cron bearer is only the publishable key.
+- Background cluster tracing runs server-side in src/lib/cluster-worker.server.ts via pg_cron -> /api/public/hooks/cluster-worker; a DB replay guard (cluster_worker row) limits runs and the route is authenticated with the managed cron helper.
 - Wallet tag presentation uses the shared WalletTag component and label map, keeping display text separate from persisted tags and trading decisions.
 - Memory state updates merge by wallet address and cloud synchronization only upserts; database client grants prohibit deletion to enforce permanent retention.
 - Master Plan Tere edge helpers live in src/lib/edge.ts as pure functions so browser and worker share them.
