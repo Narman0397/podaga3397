@@ -110,11 +110,10 @@ async function traceReverse(h: ReturnType<typeof helius>, mint: string, pumpCurv
 
 export async function runClusterWorker() {
   const db = supabaseAdmin;
-  // Replay guard: cron fires every minute; never run more than once per 50s regardless of caller.
-  const { data: last } = await db.from("cluster_worker").select("*").eq("id", "main").maybeSingle();
-  if (last && Date.now() - Date.parse(last.ran_at) < 50_000) return { skipped: true };
+  // Replay guard: cron fires every minute; atomic lock -> at most one run per 50s even under concurrent calls.
+  if (!(await tryLock("main", 50_000))) return { skipped: true };
+  const { data: last } = await db.from("cluster_worker").select("traced").eq("id", "main").maybeSingle();
   const traced = { ...((last?.traced as Record<string, number>) ?? {}) };
-  await db.from("cluster_worker").upsert({ id: "main", ran_at: new Date().toISOString(), traced });
 
   const { data: users } = await db.from("user_state").select("user_id, data");
   const { data: runs } = await db.from("cluster_worker").select("id, ran_at").like("id", "user:%");
