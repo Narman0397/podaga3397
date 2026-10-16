@@ -51,11 +51,13 @@ export function WieStatus() {
           {lastCollect ? (stale ? `Data collector usang · terakhir ${fmt(lastCollect.finished_at)}` : `Collector aktif · ${fmt(lastCollect.finished_at)}`) : "Collector belum pernah berjalan (butuh key Helius aktif)"}
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Mini label="Event wallet tersimpan" value={v.events ?? "—"} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Mini label="Event wallet" value={v.events ?? "—"} />
         <Mini label="Wallet dipantau" value={v.wallets ?? "—"} />
-        <Mini label="Kemungkinan celah histori" value={v.gaps ?? "—"} />
-        <Mini label="Job gagal (15 terakhir)" value={v.runs.filter((r) => r.status === "failed").length} />
+        <Mini label="Celah histori" value={v.gaps ?? "—"} />
+        <Mini label="Outcome (F2)" value={v.outcomes ?? "—"} />
+        <Mini label="Skor tersimpan (F3)" value={v.scoreHistory ?? "—"} />
+        <Mini label="Job gagal" value={v.runs.filter((r) => r.status === "failed").length} />
       </div>
       {v.runs.length === 0 ? (
         <p className="text-sm text-muted-foreground">Belum ada riwayat job. Riwayat muncul setelah worker latar belakang berjalan.</p>
