@@ -257,7 +257,11 @@ async function syncHeliusWebhook() {
   const db = supabaseAdmin;
   const { data: users } = await db.from("user_state").select("data");
   const ds = (users ?? []).map((u) => u.data as { positions?: Pos[]; keys?: Key[]; helius?: { master?: boolean; worker?: boolean } }).filter((d) => d.helius?.master !== false && d.helius?.worker !== false);
-  const mints = [...new Set(ds.flatMap((d) => (d.positions ?? []).map((p) => p.token)))].sort().slice(0, 100);
+  const posMints = [...new Set(ds.flatMap((d) => (d.positions ?? []).map((p) => p.token)))].sort().slice(0, 60);
+  // Tere 2 Pilar B: also stream the best-scoring tracked wallets so their buys become signals within seconds.
+  const { data: alphaRows } = await db.from("wallet_tags").select("address, perf").limit(2000);
+  const alphaW = [...new Set((alphaRows ?? []).filter((r) => (r.perf as { cls?: string } | null)?.cls === "alpha").map((r) => r.address))].sort().slice(0, 100 - posMints.length);
+  const mints = [...posMints, ...alphaW];
   const keys = [...new Set(ds.flatMap((d) => (d.keys ?? []).filter((k) => k.key && k.status !== "depleted").map((k) => k.key)))];
   const { data: row } = await db.from("cluster_worker").select("last_result").eq("id", "webhook").maybeSingle();
   const cur = (row?.last_result ?? {}) as { webhookId?: string; addrs?: string[]; key?: string; at?: string };

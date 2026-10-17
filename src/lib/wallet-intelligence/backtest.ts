@@ -51,3 +51,14 @@ export function runBacktest(signals: BtSignal[], trainShare = 0.6, minTest = 20)
     version: BACKTEST_VERSION,
   };
 }
+
+/** Tere 2 Pilar E — edge criteria: n ≥ 30 ACCEPT test samples, win rate above baseline, profit factor > 1.2. */
+export const EDGE_RULES = { minN: 30, minProfitFactor: 1.2 };
+type Mx = { n: number; winRate: number | null; profitFactor: number | null };
+export function edgeVerdict(test: Mx, baseline: Mx) {
+  const fails: string[] = [];
+  if (test.n < EDGE_RULES.minN) fails.push(`sampel ACCEPT ${test.n} < ${EDGE_RULES.minN}`);
+  if (test.winRate == null || baseline.winRate == null || test.winRate <= baseline.winRate) fails.push("win rate tidak di atas baseline");
+  if (test.profitFactor == null || test.profitFactor <= EDGE_RULES.minProfitFactor) fails.push(`profit factor ≤ ${EDGE_RULES.minProfitFactor}`);
+  return { proven: fails.length === 0, fails };
+}

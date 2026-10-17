@@ -120,7 +120,10 @@ function Radar() {
   const pendingN = feed.length - vf.length;
   const pf = vf.filter((t) => isPreRaydium(t) && (!ab.cabalOnly || hasElite(t)));
   const counts = { PF: pf.length, A: vf.filter((t) => t.status === "tierA" || t.status === "requalified").length, P: pendingN, B: vf.filter((t) => t.status === "tierB").length, Q: vf.filter((t) => t.status === "quarantine").length };
-  const list = view === "PF" ? pf : view === "P" ? [] : vf.filter((t) => view === "A" ? t.status === "tierA" || t.status === "requalified" : view === "B" ? t.status === "tierB" : t.status === "quarantine");
+  const wie = useWieSignals();
+  const [wieOnly, setWieOnly] = useState(false);
+  const base = view === "PF" ? pf : view === "P" ? feed.filter((t) => !(t.verified && t.clusterPct !== null)) : vf.filter((t) => view === "A" ? t.status === "tierA" || t.status === "requalified" : view === "B" ? t.status === "tierB" : t.status === "quarantine");
+  const list = wieOnly ? base.filter((t) => wie.get(t.mint)?.gate_decision === "ACCEPT") : base;
 
   return (
     <>
@@ -135,6 +138,7 @@ function Radar() {
         {([["A", "Tier A · Safe"], ["P", "⏳ Pending"], ["B", "Tier B · Degen"], ["Q", "Quarantine"], ["PF", "💊 Pre-Raydium Pump.fun"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setView(k)} className={view === k ? "btn !py-1.5 text-xs" : "btn-ghost !py-1.5 text-xs"}>{l} ({counts[k]})</button>
         ))}
+        <label className="flex items-center gap-1.5 text-xs text-signal" title="Tampilkan hanya token dengan sinyal WIE ACCEPT (24 jam)"><input type="checkbox" checked={wieOnly} onChange={(e) => setWieOnly(e.target.checked)} />Hanya Sinyal WIE ({[...wie.values()].filter((x) => x.gate_decision === "ACCEPT").length})</label>
         <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">Size <input className="inp w-20 !py-1" type="number" step="0.1" value={size} onChange={(e) => setSize(+e.target.value)} /> SOL</label>
         <label className="flex items-center gap-2 text-xs text-muted-foreground" title="0 = otomatis (3% AMM likuid, 8% kurva/microcap)">Max impact <input className="inp w-16 !py-1" type="number" step="0.5" value={imp} onChange={(e) => setImp(+e.target.value)} />% {imp ? "" : "(auto)"}</label>
       </div>
@@ -147,6 +151,8 @@ function Radar() {
         <div className="mt-2 max-h-64 overflow-auto">
           {memory.map((entry) => <div key={entry.address} className="flex flex-wrap items-center gap-2 border-t py-2">
             <span className="font-mono" title={entry.address}>{short(entry.address)}</span>
+            <Link to="/wie" search={{ tab: "detail", wallet: entry.address }} className="text-primary">WIE</Link>
+            <Link to="/scanner" search={{ addr: entry.address, kind: "wallet" }} className="text-cyan">Trace</Link>
             <WalletTag entry={entry} />
           </div>)}
         </div>
@@ -181,16 +187,16 @@ function Radar() {
       {toast && <div className={`card mb-4 font-mono text-sm ${toast.startsWith("⛔") ? "border-destructive/60 text-destructive" : ""}`}>{toast}</div>}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {list.length === 0 && <p className="col-span-full py-10 text-center text-sm text-muted-foreground">{view === "P" ? `${counts.P} token sedang diverifikasi on-chain — akan muncul setelah lolos.` : loading ? "Loading live Solana tokens…" : "Belum ada token terverifikasi on-chain di tier ini…"}</p>}
+        {list.length === 0 && <p className="col-span-full py-10 text-center text-sm text-muted-foreground">{wieOnly ? "Tidak ada token dengan sinyal WIE ACCEPT di tab ini." : view === "P" ? "Tidak ada token yang menunggu verifikasi." : loading ? "Loading live Solana tokens…" : "Belum ada token terverifikasi on-chain di tier ini…"}</p>}
         {list.map((t) => (
           <div key={t.mint} className="card space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div><div className="font-semibold">${t.symbol}</div><button onClick={() => copy(t.mint)} className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground hover:text-foreground" title="Copy CA">{short(t.mint)}{copied === t.mint ? <Check className="h-3 w-3 text-signal" /> : <Copy className="h-3 w-3" />}</button></div>
-              <span className={`chip ${STATUS[t.status].cls}`}>{STATUS[t.status].label}</span>
+              <div className="flex flex-col items-end gap-1"><span className={`chip ${STATUS[t.status].cls}`}>{STATUS[t.status].label}</span>{wie.get(t.mint) && <WieBadge s={wie.get(t.mint)!} onBuy={() => buy(t)} />}</div>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {t.flags.breakout && <span className="chip text-signal border-signal/40"><Flame className="h-3 w-3" />Breakout</span>}
-              {!t.verified && <span className="chip text-cyan border-cyan/40"><Users className="h-3 w-3" />⏳ Pending Verification</span>}
+              {!t.verified && <span className="chip text-cyan border-cyan/40"><Users className="h-3 w-3" />⏳ Verifying / Waiting RPC</span>}
               <PiscesChips t={t} />
               {t.intel.rugger && <span className="chip text-destructive border-destructive/50"><Siren className="h-3 w-3" />Serial Rugger</span>}
               {t.intel.organic && t.clusterPct !== null && t.clusterPct < 15 && <span className="chip text-signal border-signal/40"><ShieldCheck className="h-3 w-3" />Safe Organic Distribution</span>}
@@ -220,6 +226,7 @@ function Radar() {
             <div className="flex gap-2">
               <button className="btn flex-1 !py-1.5 text-xs" onClick={() => buy(t)}>Paper buy</button>
               {!t.verified && <button className="btn-ghost !py-1.5 text-xs text-cyan" disabled={checking.has(t.mint)} onClick={() => vNow(t)}>{checking.has(t.mint) ? "Verifying…" : "Verify Now"}</button>}
+              <Link className="btn-ghost !py-1.5 text-xs" to="/scanner" search={{ addr: t.mint, kind: "token" }}>Audit CA</Link>
               <a className="btn-ghost !py-1.5 text-xs" href={`https://dexscreener.com/solana/${t.mint}`} target="_blank" rel="noreferrer">Dex<ExternalLink className="ml-1 h-3 w-3" /></a>
               {isPumpFun(t.mint, t.dexId)
                 ? <a className="btn-ghost !py-1.5 text-xs" href={`https://pump.fun/coin/${t.mint}`} target="_blank" rel="noreferrer">Pump.fun</a>
@@ -281,5 +288,37 @@ function TopVolumeDaily() {
           <Link to="/scanner" search={{ addr: t.mint, kind: "token" }} className="ml-auto text-primary">scan →</Link>
         </div>))}</div>}
     </div>
+  );
+}
+
+type WieSig = { mint: string; wallet: string; gate_decision: string; signal_at: string; risk_score: number | null; execution: { feePct?: number; impactPct?: number | null; copyable?: string } | null; gate: { reasons?: string[]; overall_score?: number | null } | null };
+/** Tere 2 Pilar C: latest ACCEPT/WATCH WIE signal per mint (last 24h), refreshed every minute. */
+function useWieSignals() {
+  const [m, setM] = useState<Map<string, WieSig>>(new Map());
+  useEffect(() => {
+    const f = async () => {
+      const since = new Date(Date.now() - 86_400_000).toISOString();
+      const { data } = await supabase.from("wallet_signals").select("mint, wallet, gate_decision, signal_at, risk_score, execution, gate").in("gate_decision", ["ACCEPT", "WATCH"]).gte("signal_at", since).order("signal_at", { ascending: false }).limit(500);
+      const out = new Map<string, WieSig>();
+      for (const r of (data ?? []) as unknown as WieSig[]) { const c = out.get(r.mint); if (!c || (c.gate_decision !== "ACCEPT" && r.gate_decision === "ACCEPT")) out.set(r.mint, r); }
+      setM(out);
+    };
+    void f(); const t = setInterval(f, 60_000); return () => clearInterval(t);
+  }, []);
+  return m;
+}
+function WieBadge({ s, onBuy }: { s: WieSig; onBuy: () => void }) {
+  const acc = s.gate_decision === "ACCEPT";
+  return (
+    <details className="relative">
+      <summary className={`chip cursor-pointer list-none ${acc ? "text-signal border-signal/40" : "text-warn border-warn/40"}`}>{acc ? "✓ WIE ACCEPT" : "◔ WIE WATCH"}</summary>
+      <div className="absolute right-0 z-20 mt-1 w-64 space-y-1 rounded-lg border border-border bg-card p-3 text-[11px] shadow-lg">
+        <div>Wallet: <Link to="/wie" search={{ tab: "detail", wallet: s.wallet }} className="font-mono text-primary">{short(s.wallet)}</Link></div>
+        <div>Skor gate: <span className="font-mono">{s.gate?.overall_score ?? "—"}</span> · Risiko: <span className="font-mono">{s.risk_score ?? "—"}</span></div>
+        <div>Fee/impact: <span className="font-mono">{s.execution?.feePct ?? "—"}% / {s.execution?.impactPct ?? "—"}%</span> · copyable {s.execution?.copyable ?? "?"}</div>
+        <div className="text-muted-foreground">{(s.gate?.reasons ?? []).slice(0, 3).join("; ") || "—"}</div>
+        {acc && <button className="btn w-full !py-1 text-xs" onClick={onBuy}>1-Click Paper Buy</button>}
+      </div>
+    </details>
   );
 }
