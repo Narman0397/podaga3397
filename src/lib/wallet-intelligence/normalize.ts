@@ -1,6 +1,14 @@
 import { NORMALIZER_VERSION, type RawEnhancedTx, type WalletEvent } from "./types";
 
 const LAMPORTS = 1e9;
+
+/** Quote/base currencies: WSOL, USDC, USDT. Never recorded as a signal target mint. */
+export const QUOTE_MINTS = new Set([
+  "So11111111111111111111111111111111111111112",
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+]);
+export const isQuoteMint = (m: string | null | undefined) => !!m && QUOTE_MINTS.has(m);
 const SIG_RE = /^[1-9A-HJ-NP-Za-km-z]{60,100}$/;
 
 export interface NormalizeResult {
@@ -63,9 +71,15 @@ export function normalizeWalletTxs(
     }
     const counterparty = [...cp.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 
-    const legs = (tx.tokenTransfers ?? []).filter(
+    const allLegs = (tx.tokenTransfers ?? []).filter(
       (t) => t?.mint && (t.toUserAccount === wallet || t.fromUserAccount === wallet),
     );
+    // Tere 2 Pilar A: quote tokens (WSOL/USDC/USDT) are never the traded target.
+    const legs = allLegs.filter((t) => !isQuoteMint(t.mint));
+    if (allLegs.length && !legs.length && sol === null) {
+      skipped.push({ reason: "quote_only", signature: sig });
+      continue;
+    }
     const base = {
       wallet,
       signature: sig,

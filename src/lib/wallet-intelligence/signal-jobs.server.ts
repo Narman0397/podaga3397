@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { tryLock, withJobRun } from "./job-runs.server";
 import { sanitizeError } from "./jobs";
+import { isQuoteMint } from "./normalize";
 import {
   SIGNAL_VERSION, evaluateEntry, tokenRisk, estimateExecution, dueHorizons, excursions, retPct,
   type HorizonSample,
@@ -45,8 +46,8 @@ async function market(mints: string[]): Promise<Map<string, Mkt>> {
   return out;
 }
 
-export async function runSignalJob() {
-  if (!(await tryLock("wie-signals", EVERY))) return null;
+export async function runSignalJob(force = false) {
+  if (!force && !(await tryLock("wie-signals", EVERY))) return null;
   let records_seen = 0, records_inserted = 0, records_updated = 0, records_skipped = 0, error_count = 0;
   const now = new Date();
   const sol = await solUsd();
@@ -63,7 +64,7 @@ export async function runSignalJob() {
   if (evs?.length) {
     const { data: existing } = await supabaseAdmin.from("wallet_signals").select("signature, wallet, mint").in("signature", evs.map((e) => e.signature));
     const have = new Set((existing ?? []).map((x) => `${x.signature}:${x.wallet}:${x.mint}`));
-    const fresh = evs.filter((e) => !have.has(`${e.signature}:${e.wallet}:${e.mint}`));
+    const fresh = evs.filter((e) => !isQuoteMint(e.mint) && !have.has(`${e.signature}:${e.wallet}:${e.mint}`));
     records_skipped += evs.length - fresh.length;
     const mk = await market([...new Set(fresh.map((e) => e.mint!))]);
     const rows = fresh.map((e) => {
