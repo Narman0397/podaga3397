@@ -5,8 +5,11 @@ import { PageHeader } from "@/components/ui-bits";
 import { WieStatus } from "@/components/WieStatus";
 import { neighbourhood } from "@/lib/wallet-intelligence/graph";
 import { short } from "@/lib/sim";
+import { z } from "zod";
+import { edgeVerdict } from "@/lib/wallet-intelligence/backtest";
 
 export const Route = createFileRoute("/wie")({
+  validateSearch: z.object({ tab: z.enum(["ringkasan", "detail", "backtest", "jobs"]).optional(), wallet: z.string().optional() }),
   head: () => ({ meta: [
     { title: "Wallet Intelligence — Solana Sentinel" },
     { name: "description", content: "Ringkasan WIE: keputusan gate, relasi wallet berbukti, detail wallet, dan backtest temporal." },
@@ -30,7 +33,11 @@ const n = (v: number | null | undefined, suf = "") => (v == null ? "—" : `${v}
 const TABS = ["Ringkasan", "Detail wallet", "Backtest", "Job Monitor"] as const;
 
 function WiePage() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Ringkasan");
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const KEY = { ringkasan: "Ringkasan", detail: "Detail wallet", backtest: "Backtest", jobs: "Job Monitor" } as const;
+  const tab: (typeof TABS)[number] = KEY[search.tab ?? (search.wallet ? "detail" : "ringkasan")];
+  const setTab = (t: (typeof TABS)[number]) => void navigate({ search: (p) => ({ ...p, tab: (Object.keys(KEY) as (keyof typeof KEY)[]).find((k) => KEY[k] === t) }) });
   const [st, setSt] = useState<"loading" | "guest" | "error" | "ok">("loading");
   const [sigs, setSigs] = useState<Sig[]>([]);
   const [bts, setBts] = useState<Bt[]>([]);
@@ -68,7 +75,7 @@ function WiePage() {
         : st === "error" ? <div className="card text-sm text-destructive">Data tidak dapat dimuat.</div>
         : tab === "Ringkasan" ? <Overview sigs={sigs} wallets={wallets} rels={rels} />
         : tab === "Backtest" ? <Backtests bts={bts} />
-        : <WalletDetail />}
+        : <WalletDetail initial={search.wallet} />}
     </div>
   );
 }
@@ -95,7 +102,7 @@ function Overview({ sigs, wallets, rels }: { sigs: Sig[]; wallets: { total: numb
             <thead className="text-left text-muted-foreground"><tr><th className="pr-3">Waktu</th><th className="pr-3">Wallet</th><th className="pr-3">Token</th><th className="pr-3">Delay</th><th className="pr-3">Likuiditas</th><th className="pr-3">Entry</th><th className="pr-3">Risiko</th><th className="pr-3">Gate</th><th>Alasan</th></tr></thead>
             <tbody>{sigs.slice(0, 50).map((s) => (
               <tr key={s.id} className="border-t border-border">
-                <td className="pr-3 font-mono">{fmt(s.signal_at)}</td><td className="pr-3 font-mono">{short(s.wallet)}</td><td className="pr-3 font-mono">{short(s.mint)}</td>
+                <td className="pr-3 font-mono">{fmt(s.signal_at)}</td><td className="pr-3 font-mono"><Link to="/wie" search={{ tab: "detail", wallet: s.wallet }} className="text-primary hover:underline">{short(s.wallet)}</Link></td><td className="pr-3 font-mono"><Link to="/scanner" search={{ addr: s.mint, kind: "token" }} className="text-primary hover:underline">{short(s.mint)}</Link></td>
                 <td className="pr-3 font-mono">{s.delay_sec == null ? "—" : `${Math.round(s.delay_sec / 60)}m`}</td>
                 <td className="pr-3 font-mono">{s.liquidity_usd == null ? "tidak diketahui" : `$${Math.round(Number(s.liquidity_usd)).toLocaleString()}`}</td>
                 <td className="pr-3">{s.entry_status}</td><td className="pr-3 font-mono">{n(s.risk_score)}</td>
@@ -120,6 +127,7 @@ function Backtests({ bts }: { bts: Bt[] }) {
           <table className="w-full text-xs"><thead className="text-muted-foreground"><tr><th className="text-left">Metrik</th><th>Gate ACCEPT</th><th>Baseline</th></tr></thead>
             <tbody>{([["Sampel", "n", ""], ["Win rate", "winRate", "%"], ["Net expectancy", "expectancy", "%"], ["Profit factor", "profitFactor", ""], ["Max drawdown", "maxDrawdownPct", "%"]] as const).map(([l, k, s]) => (
               <tr key={k} className="border-t border-border"><td>{l}</td><td className="text-center font-mono">{n(b.test[k], s)}</td><td className="text-center font-mono">{n(b.baseline[k], s)}</td></tr>))}</tbody></table>
+          {(() => { const v = edgeVerdict(b.test, b.baseline); return <p className={`text-xs font-semibold ${v.proven ? "text-signal" : "text-muted-foreground"}`}>{v.proven ? "Edge terbukti (n≥30, win rate > baseline, PF > 1.2)" : `Edge belum terbukti: ${v.fails.join("; ")}`}</p>; })()}
           <ul className="list-disc pl-4 text-xs text-warn">{b.warnings.map((w) => <li key={w}>{w}</li>)}</ul>
         </section>))}
       <p className="text-xs text-muted-foreground md:col-span-3">Hasil setelah biaya estimasi. Pembagian latih/uji kronologis 60/40; token tanpa harga lanjutan dihitung −100%, bukan dibuang.</p>
@@ -127,14 +135,16 @@ function Backtests({ bts }: { bts: Bt[] }) {
   );
 }
 
-function WalletDetail() {
-  const [addr, setAddr] = useState("");
+function WalletDetail({ initial }: { initial?: string }) {
+  const [addr, setAddr] = useState(initial ?? "");
   const [d, setD] = useState<null | "loading" | { scores: { scored_at: string; score: number; confidence: number; win_rate: number; tokens_closed: number; cls: string; score_version: string }[]; outcomes: { mint: string; roi: number | null; hold_sec: number | null; is_closed: boolean }[]; rels: Rel[]; events: number | null }>(null);
   const [err, setErr] = useState<string | null>(null);
   const [known, setKnown] = useState<string[]>([]);
   useEffect(() => {
     supabase.from("wallet_collect_state").select("wallet").limit(50).then(({ data }) => setKnown((data ?? []).map((x) => x.wallet)));
-  }, []);
+    if (initial) void load(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial]);
   const load = async (raw = addr) => {
     const a = raw.trim();
     if (!isSolAddress(a)) { setErr("Alamat Solana tidak valid (32–44 karakter base58)."); return; }

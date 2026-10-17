@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CopyBtn } from "@/components/CopyBtn";
 import { useMemo, useRef, useState } from "react";
 import { PageHeader, Stat } from "@/components/ui-bits";
 import { setState, useStore, isAutoTag, getState, blacklistLabel, type MemoryEntry } from "@/lib/store";
@@ -186,7 +187,9 @@ function Memory() {
             <tbody>{pageRows.map((m) => (
               <tr key={m.address} className="border-t">
                 <td className="py-2"><input type="checkbox" checked={sel.has(m.address)} onChange={() => toggle(m.address)} /></td>
-                <td className="font-mono text-xs">{m.address}</td>
+                <td className="font-mono text-xs"><div className="flex flex-wrap items-center gap-1.5"><span className="break-all">{m.address}</span><CopyBtn text={m.address} />
+                  <Link to="/wie" search={{ tab: "detail", wallet: m.address }} className="chip text-primary">WIE</Link>
+                  <Link to="/scanner" search={{ addr: m.address, kind: "wallet" }} className="chip text-cyan">Trace</Link></div></td>
                 <td><WalletTag entry={m} /></td><td className="text-muted-foreground">{m.note}</td>
                 <td className="font-mono text-xs">{m.seen}</td>
                 <td className="font-mono text-xs">{walletScore(m)}</td>
