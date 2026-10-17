@@ -135,7 +135,7 @@ function Backtests({ bts }: { bts: Bt[] }) {
   );
 }
 
-function WalletDetail({ initial }: { initial?: string }) {
+function WalletDetail({ initial }: { initial?: string | undefined }) {
   const [addr, setAddr] = useState(initial ?? "");
   const [d, setD] = useState<null | "loading" | { scores: { scored_at: string; score: number; confidence: number; win_rate: number; tokens_closed: number; cls: string; score_version: string }[]; outcomes: { mint: string; roi: number | null; hold_sec: number | null; is_closed: boolean }[]; rels: Rel[]; events: number | null }>(null);
   const [err, setErr] = useState<string | null>(null);
