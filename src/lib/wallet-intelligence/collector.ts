@@ -59,7 +59,9 @@ export async function collectWallets(
     try {
       for (let page = 0; page < pages; page++) {
         const backfilling = !!(s.pending_newest_signature || s.backfill_before);
-        const txs = await deps.fetchTxs(s.wallet, s.newest_signature, limits.txPerWallet, backfilling ? s.backfill_before ?? null : null);
+        // Legacy gaps (pointer already advanced, pending == newest) walk back with no lower bound.
+        const until = backfilling && s.pending_newest_signature === s.newest_signature ? null : s.newest_signature;
+        const txs = await deps.fetchTxs(s.wallet, until, limits.txPerWallet, backfilling ? s.backfill_before ?? null : null);
         if (txs === null) {
           c.error_count++;
           // Source failed: keep checkpoint and cursor untouched.
@@ -79,7 +81,7 @@ export async function collectWallets(
         if (!backfilling) {
           if (!full) {
             s = { ...s, newest_signature: top?.signature ?? s.newest_signature, newest_block_time: isoOf(top) ?? s.newest_block_time, events_count: s.events_count + inserted };
-            await deps.saveState({ ...s, possible_gap: false, last_error: null, history_complete: s.newest_signature == null ? undefined : undefined });
+            await deps.saveState({ ...s, possible_gap: false, last_error: null});
             break;
           }
           // Full page: range below this page is not yet stored → hold checkpoint, start backfill.
