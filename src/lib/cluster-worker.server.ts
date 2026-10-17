@@ -468,12 +468,13 @@ export async function runWieCollector(users: UserRow[]) {
   const { data: tagged } = await supabaseAdmin.from("wallet_tags").select("address").in("tag", ["cabal", "watch"]).limit(2000);
   const addrs = [...new Set((tagged ?? []).map((t) => t.address))];
   if (!addrs.length) return { ...emptyCounters(), wallets: 0 };
-  const { data: st } = await supabaseAdmin.from("wallet_collect_state").select("wallet, newest_signature, newest_block_time, events_count, last_run_at").in("wallet", addrs);
+  const { data: st } = await supabaseAdmin.from("wallet_collect_state").select("wallet, newest_signature, newest_block_time, events_count, last_run_at, possible_gap, backfill_before, pending_newest_signature, pending_newest_block_time").in("wallet", addrs);
   const byW = new Map((st ?? []).map((r) => [r.wallet, r]));
   const queue = addrs.map((w) => byW.get(w) ?? { wallet: w, newest_signature: null, newest_block_time: null, events_count: 0, last_run_at: null })
-    .sort((a, b) => (a.last_run_at ? Date.parse(a.last_run_at) : 0) - (b.last_run_at ? Date.parse(b.last_run_at) : 0));
+    .sort((a, b) => Number(!!(b as { possible_gap?: boolean }).possible_gap) - Number(!!(a as { possible_gap?: boolean }).possible_gap) // gap backfill first
+      || (a.last_run_at ? Date.parse(a.last_run_at) : 0) - (b.last_run_at ? Date.parse(b.last_run_at) : 0));
   return collectWallets(queue, {
-    fetchTxs: (w, until, limit) => h.rest<RawEnhancedTx[]>(`/v0/addresses/${w}/transactions?limit=${limit}${until ? `&until=${until}` : ""}`),
+    fetchTxs: (w, until, limit, before) => h.rest<RawEnhancedTx[]>(`/v0/addresses/${w}/transactions?limit=${limit}${until ? `&until=${until}` : ""}${before ? `&before=${before}` : ""}`),
     insertEvents: async (events) => {
       const { data, error } = await supabaseAdmin.from("wallet_events").upsert(events, { onConflict: "signature,wallet,event_index", ignoreDuplicates: true }).select("id");
       if (error) throw new Error(error.message);

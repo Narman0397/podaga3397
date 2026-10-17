@@ -33,7 +33,7 @@ export async function runGateJob() {
   if (!(await tryLock("wie-gate", 5 * 60_000))) return null;
   const { data: sigs } = await supabaseAdmin.from("wallet_signals")
     .select("id, wallet, signal_at, entry_status, delay_sec, risk_score, risk_confidence, liquidity_usd, execution")
-    .is("gate_decision", null).limit(200);
+    .is("gate_decision", null).is("excluded_reason", null).limit(200);
   if (!sigs?.length) return { records_seen: 0 };
   const wallets = [...new Set(sigs.map((s) => s.wallet))];
   const [{ data: scores }, { data: relsA }, { data: relsB }] = await Promise.all([
@@ -63,7 +63,7 @@ export async function runGateJob() {
 
 export async function runBacktestJob() {
   if (!(await tryLock("wie-backtest", 24 * 3_600_000))) return null;
-  const { data } = await supabaseAdmin.from("wallet_signals").select("signal_at, gate_decision, horizons, execution").not("gate_decision", "is", null).order("signal_at").limit(5000);
+  const { data } = await supabaseAdmin.from("wallet_signals").select("signal_at, gate_decision, horizons, execution").not("gate_decision", "is", null).is("excluded_reason", null).order("signal_at").limit(5000);
   const rows = data ?? [];
   let inserted = 0;
   for (const h of ["15m", "1h", "24h"]) {

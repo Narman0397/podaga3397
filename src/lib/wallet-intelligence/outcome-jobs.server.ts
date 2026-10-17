@@ -20,7 +20,7 @@ export async function runOutcomeJob() {
   const { data: walletRows, error: wErr } = await supabaseAdmin
     .from("wallet_events")
     .select("wallet")
-    .in("activity", ["buy", "sell"])
+    .in("activity", ["buy", "sell", "token_transfer"])
     .limit(5000);
   if (wErr) throw new Error(`outcome fetch wallets: ${wErr.message}`);
 
@@ -34,9 +34,9 @@ export async function runOutcomeJob() {
       // Fetch all buy/sell events for this wallet ordered chronologically.
       const { data: evRows, error: evErr } = await supabaseAdmin
         .from("wallet_events")
-        .select("wallet, mint, activity, sol_amount, block_time, parse_status")
+        .select("wallet, mint, activity, sol_amount, token_amount, direction, block_time, parse_status")
         .eq("wallet", wallet)
-        .in("activity", ["buy", "sell"])
+        .in("activity", ["buy", "sell", "token_transfer"])
         .not("mint", "is", null)
         .order("block_time", { ascending: true });
       if (evErr) { error_count++; continue; }

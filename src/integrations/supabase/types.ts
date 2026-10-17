@@ -82,34 +82,43 @@ export type Database = {
       }
       wallet_collect_state: {
         Row: {
+          backfill_before: string | null
           events_count: number
           history_complete: boolean
           last_error: string | null
           last_run_at: string | null
           newest_block_time: string | null
           newest_signature: string | null
+          pending_newest_block_time: string | null
+          pending_newest_signature: string | null
           possible_gap: boolean
           updated_at: string
           wallet: string
         }
         Insert: {
+          backfill_before?: string | null
           events_count?: number
           history_complete?: boolean
           last_error?: string | null
           last_run_at?: string | null
           newest_block_time?: string | null
           newest_signature?: string | null
+          pending_newest_block_time?: string | null
+          pending_newest_signature?: string | null
           possible_gap?: boolean
           updated_at?: string
           wallet: string
         }
         Update: {
+          backfill_before?: string | null
           events_count?: number
           history_complete?: boolean
           last_error?: string | null
           last_run_at?: string | null
           newest_block_time?: string | null
           newest_signature?: string | null
+          pending_newest_block_time?: string | null
+          pending_newest_signature?: string | null
           possible_gap?: boolean
           updated_at?: string
           wallet?: string
@@ -187,48 +196,75 @@ export type Database = {
           buy_count: number
           computed_at: string
           first_buy_at: string | null
+          first_trade_at: string | null
           hold_sec: number | null
           id: string
           is_closed: boolean
           last_sell_at: string | null
+          last_trade_at: string | null
           mint: string
           outcome_version: string
+          position_status: string
+          realized_sol: number | null
+          remaining_tokens: number | null
           roi: number | null
           sell_count: number
           sol_received: number
           sol_spent: number
+          tokens_bought: number | null
+          tokens_sold: number | null
+          transfer_in_count: number
+          transfer_out_count: number
           wallet: string
         }
         Insert: {
           buy_count?: number
           computed_at?: string
           first_buy_at?: string | null
+          first_trade_at?: string | null
           hold_sec?: number | null
           id?: string
           is_closed?: boolean
           last_sell_at?: string | null
+          last_trade_at?: string | null
           mint: string
           outcome_version?: string
+          position_status?: string
+          realized_sol?: number | null
+          remaining_tokens?: number | null
           roi?: number | null
           sell_count?: number
           sol_received?: number
           sol_spent?: number
+          tokens_bought?: number | null
+          tokens_sold?: number | null
+          transfer_in_count?: number
+          transfer_out_count?: number
           wallet: string
         }
         Update: {
           buy_count?: number
           computed_at?: string
           first_buy_at?: string | null
+          first_trade_at?: string | null
           hold_sec?: number | null
           id?: string
           is_closed?: boolean
           last_sell_at?: string | null
+          last_trade_at?: string | null
           mint?: string
           outcome_version?: string
+          position_status?: string
+          realized_sol?: number | null
+          remaining_tokens?: number | null
           roi?: number | null
           sell_count?: number
           sol_received?: number
           sol_spent?: number
+          tokens_bought?: number | null
+          tokens_sold?: number | null
+          transfer_in_count?: number
+          transfer_out_count?: number
           wallet?: string
         }
         Relationships: []
@@ -328,6 +364,7 @@ export type Database = {
           delay_sec: number | null
           detected_at: string | null
           entry_status: string
+          excluded_reason: string | null
           execution: Json
           gate: Json | null
           gate_at: string | null
@@ -358,6 +395,7 @@ export type Database = {
           delay_sec?: number | null
           detected_at?: string | null
           entry_status: string
+          excluded_reason?: string | null
           execution?: Json
           gate?: Json | null
           gate_at?: string | null
@@ -388,6 +426,7 @@ export type Database = {
           delay_sec?: number | null
           detected_at?: string | null
           entry_status?: string
+          excluded_reason?: string | null
           execution?: Json
           gate?: Json | null
           gate_at?: string | null
