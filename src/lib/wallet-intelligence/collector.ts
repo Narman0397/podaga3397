@@ -48,7 +48,7 @@ const sigs = (txs: RawEnhancedTx[]) => txs.filter((t) => typeof t.signature === 
 export async function collectWallets(
   states: CollectState[],
   deps: CollectorDeps,
-  limits = COLLECT_LIMITS,
+  limits: { walletsPerRun: number; txPerWallet: number; backfillPagesPerWallet?: number } = COLLECT_LIMITS,
 ): Promise<JobCounters & { wallets: number; gaps_closed: number }> {
   const c = emptyCounters();
   let wallets = 0, gaps_closed = 0;
