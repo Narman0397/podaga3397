@@ -36,7 +36,7 @@ export function WieStatus() {
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }).eq("possible_gap", true),
         supabase.from("wallet_outcomes").select("id", { count: "exact", head: true }),
         supabase.from("wallet_score_history").select("id", { count: "exact", head: true }),
-        supabase.from("wallet_signals").select("wallet, entry_status, horizons, execution").order("signal_at", { ascending: false }).limit(1000),
+        supabase.from("wallet_signals").select("wallet, entry_status, horizons, execution").is("excluded_reason", null).order("signal_at", { ascending: false }).limit(1000),
       ]);
       if (!alive) return;
       if (runs.error) { setV({ state: "error", msg: "Status job tidak dapat dimuat." }); return; }
