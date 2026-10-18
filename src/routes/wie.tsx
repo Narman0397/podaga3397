@@ -49,7 +49,7 @@ function WiePage() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return setSt("guest");
       const [s, b, w, sc, r] = await Promise.all([
-        supabase.from("wallet_signals").select("id, wallet, mint, signal_at, delay_sec, liquidity_usd, entry_status, risk_score, gate_decision, gate").order("signal_at", { ascending: false }).limit(200),
+        supabase.from("wallet_signals").select("id, wallet, mint, signal_at, delay_sec, liquidity_usd, entry_status, risk_score, gate_decision, gate").is("excluded_reason", null).order("signal_at", { ascending: false }).limit(200),
         supabase.from("wie_backtests").select("id, created_at, horizon, test_from, test_to, test, baseline, warnings").order("created_at", { ascending: false }).limit(9),
         supabase.from("wallet_collect_state").select("wallet", { count: "exact", head: true }),
         supabase.from("wallet_score_history").select("wallet").gte("tokens_closed", 5).limit(1000),
@@ -137,7 +137,7 @@ function Backtests({ bts }: { bts: Bt[] }) {
 
 function WalletDetail({ initial }: { initial?: string | undefined }) {
   const [addr, setAddr] = useState(initial ?? "");
-  const [d, setD] = useState<null | "loading" | { scores: { scored_at: string; score: number; confidence: number; win_rate: number; tokens_closed: number; cls: string; score_version: string }[]; outcomes: { mint: string; roi: number | null; hold_sec: number | null; is_closed: boolean }[]; rels: Rel[]; events: number | null }>(null);
+  const [d, setD] = useState<null | "loading" | { scores: { scored_at: string; score: number; confidence: number; win_rate: number; tokens_closed: number; cls: string; score_version: string }[]; outcomes: { mint: string; roi: number | null; hold_sec: number | null; is_closed: boolean; position_status: string }[]; rels: Rel[]; events: number | null }>(null);
   const [err, setErr] = useState<string | null>(null);
   const [known, setKnown] = useState<string[]>([]);
   useEffect(() => {
@@ -152,7 +152,7 @@ function WalletDetail({ initial }: { initial?: string | undefined }) {
     setD("loading");
     const [s, o, ra, rb, e] = await Promise.all([
       supabase.from("wallet_score_history").select("scored_at, score, confidence, win_rate, tokens_closed, cls, score_version").eq("wallet", a).order("scored_at", { ascending: false }).limit(20),
-      supabase.from("wallet_outcomes").select("mint, roi, hold_sec, is_closed").eq("wallet", a).order("computed_at", { ascending: false }).limit(50),
+      supabase.from("wallet_outcomes").select("mint, roi, hold_sec, is_closed, position_status").eq("wallet", a).order("last_trade_at", { ascending: false }).limit(50),
       supabase.from("wallet_relations").select("wallet_a, wallet_b, relation, status, confidence, frequency, first_seen, last_seen, reasons, evidence").eq("wallet_a", a).limit(120),
       supabase.from("wallet_relations").select("wallet_a, wallet_b, relation, status, confidence, frequency, first_seen, last_seen, reasons, evidence").eq("wallet_b", a).limit(120),
       supabase.from("wallet_events").select("id", { count: "exact", head: true }).eq("wallet", a),
@@ -186,7 +186,7 @@ function WalletDetail({ initial }: { initial?: string | undefined }) {
         </section>
         <section className="card"><h2 className="mb-2 font-semibold">Hasil per token</h2>
           {d.outcomes.length ? <div className="flex flex-wrap items-end gap-1" aria-label="Grafik ROI per token">
-            {d.outcomes.map((o) => <div key={o.mint} title={`${short(o.mint)} · ROI ${o.roi ?? "?"}× · ${o.is_closed ? "tertutup" : "terbuka"}`} className={o.roi == null || !o.is_closed ? "w-3 bg-muted" : o.roi >= 1 ? "w-3 bg-signal" : "w-3 bg-destructive"} style={{ height: `${Math.max(4, Math.min(80, (o.roi ?? 0.5) * 30))}px` }} />)}
+            {d.outcomes.map((o) => <div key={o.mint} title={`${short(o.mint)} · ROI ${o.roi ?? "?"}× · ${({ OPEN: "terbuka", PARTIAL: "jual sebagian", CLOSED: "tertutup", TRANSFER_ONLY: "hanya transfer" } as Record<string, string>)[o.position_status] ?? o.position_status}`} className={o.roi == null || !o.is_closed ? "w-3 bg-muted" : o.roi >= 1 ? "w-3 bg-signal" : "w-3 bg-destructive"} style={{ height: `${Math.max(4, Math.min(80, (o.roi ?? 0.5) * 30))}px` }} />)}
           </div> : <p className="text-sm text-muted-foreground">Belum ada outcome.</p>}
         </section>
         <RelGraph center={a} rels={d.rels} />
