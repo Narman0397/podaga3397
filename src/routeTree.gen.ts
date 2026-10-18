@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as KeysRouteImport } from './routes/keys'
 import { Route as LifecycleRouteImport } from './routes/lifecycle'
 import { Route as MemoryRouteImport } from './routes/memory'
@@ -43,6 +44,11 @@ const AuditRoute = AuditRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoveryRoute = DiscoveryRouteImport.update({
+  id: '/discovery',
+  path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KeysRoute = KeysRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
+  '/discovery': typeof DiscoveryRoute
   '/keys': typeof KeysRoute
   '/lifecycle': typeof LifecycleRoute
   '/memory': typeof MemoryRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
+  '/discovery': typeof DiscoveryRoute
   '/keys': typeof KeysRoute
   '/lifecycle': typeof LifecycleRoute
   '/memory': typeof MemoryRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/audit': typeof AuditRoute
   '/auth': typeof AuthRoute
+  '/discovery': typeof DiscoveryRoute
   '/keys': typeof KeysRoute
   '/lifecycle': typeof LifecycleRoute
   '/memory': typeof MemoryRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/audit'
     | '/auth'
+    | '/discovery'
     | '/keys'
     | '/lifecycle'
     | '/memory'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/audit'
     | '/auth'
+    | '/discovery'
     | '/keys'
     | '/lifecycle'
     | '/memory'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/audit'
     | '/auth'
+    | '/discovery'
     | '/keys'
     | '/lifecycle'
     | '/memory'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   AlertsRoute: typeof AlertsRoute
   AuditRoute: typeof AuditRoute
   AuthRoute: typeof AuthRoute
+  DiscoveryRoute: typeof DiscoveryRoute
   KeysRoute: typeof KeysRoute
   LifecycleRoute: typeof LifecycleRoute
   MemoryRoute: typeof MemoryRoute
@@ -254,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discovery': {
+      id: '/discovery'
+      path: '/discovery'
+      fullPath: '/discovery'
+      preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/keys': {
@@ -341,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsRoute: AlertsRoute,
   AuditRoute: AuditRoute,
   AuthRoute: AuthRoute,
+  DiscoveryRoute: DiscoveryRoute,
   KeysRoute: KeysRoute,
   LifecycleRoute: LifecycleRoute,
   MemoryRoute: MemoryRoute,
